@@ -1,0 +1,1 @@
+Create a database with images of food and train a nueral net to accuractely predict total calories and macronutrients. 
