@@ -15,6 +15,7 @@ headers = {
 response = requests.get(url,params,headers=headers).json()
 
 
-#print(response.text)
 
-print(response)
+
+for entry in response['common']:
+    print(entry['food_name'],'| tag_id:', entry['tag_id'],'| units:', entry['serving_unit'], '| serving_quantity:', entry['serving_qty'])

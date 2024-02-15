@@ -4,7 +4,7 @@ import json
 url = 'https://trackapi.nutritionix.com/v2/natural/nutrients'
 
 data = {
-    'query': 'Chicken, rice and brocoli'
+    'query': 'pepparoni pizza'
 
 }
 
@@ -19,6 +19,21 @@ headers = {
 
 response = requests.post(url, data=json_data, headers=headers).json()
 
-# Print the response with headers
-print(response)
 
+for i in response['foods']:
+    name = i['food_name']
+    serving_qty = i['serving_qty']
+    serving_unit = i['serving_unit']
+    serving_weight_grams = i['serving_weight_grams']
+    calories = i['nf_calories']
+    fat = i['nf_total_fat']
+    carbs = i['nf_total_carbohydrate']
+    protein = i['nf_protein']
+
+    print(name)
+    print('serving_quantity',serving_qty)
+    print('calories:', calories)
+    print('protein:', protein)
+    print('total fat:', fat)
+    print('carbs:', carbs)
+    print('')
