@@ -29,5 +29,9 @@ def get_nutrition(food_item):
         }
         nutrients_list.append(nutrition_details)
 
-    return jsonify(nutrients_list)
+    try:
+        return jsonify(nutrients_list)
+    
+    except:
+        return nutrients_list
 
