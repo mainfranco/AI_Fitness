@@ -45,10 +45,8 @@ def log_food_entry(query):
             
             entry_log[i] = round(servings * nutrition[i],2)
 
-        print(entry_log)
-
      
-        with sqlite3.connect('fitness_app.db') as conn:
+        with sqlite3.connect("C:/Users/mainf/OneDrive/Desktop/Data Science Projects/Fitness Data Project/APIs/fitness_app.db") as conn:
             cursor = conn.cursor()
 
             
@@ -69,10 +67,20 @@ def log_food_entry(query):
 
             
          # Formatting the output
-            output = f"{entry_log['food_name']}, calories: {entry_log['calories']},\
-                  protein: {entry_log['protein']}, carbs: {entry_log['carbs']}, 'fats': {entry_log['fat']}, \
-                  cholesterol: {entry_log['cholesterol']}, sodium: {entry_log['sodium']}, potassium: {entry_log['potassium']}, \
-                  sugar: {entry_log['sugars']},date: {entry_log['entry_date']} , img: {entry_log['img']}"
+            output = (
+                f"{entry_log['food_name']}, "
+                f"calories: {entry_log['calories']}, "
+                f"protein: {entry_log['protein']}, "
+                f"carbs: {entry_log['carbs']}, "
+                f"fats: {entry_log['fat']}, "
+                f"cholesterol: {entry_log['cholesterol']}, "
+                f"sodium: {entry_log['sodium']}, "
+                f"potassium: {entry_log['potassium']}, "
+                f"sugar: {entry_log['sugars']}, "
+                f"date: {entry_log['entry_date']}, "
+                f"img: {entry_log['img']}"
+)
+
                     
             
             
