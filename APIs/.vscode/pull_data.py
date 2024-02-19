@@ -5,7 +5,7 @@ conn = sqlite3.connect('fitness_app.db')
 cursor = conn.cursor()
 
 # Query the database for all entries in food_logs
-cursor.execute('SELECT * FROM food_entries')
+cursor.execute('SELECT * FROM food_log')
 
 # Fetch all rows from the query
 rows = cursor.fetchall()

@@ -3,6 +3,9 @@ import json
 from flask import jsonify
 from nutritionix_nlp_food import get_nutrition
 
+#This code lists food options based on a search query and then returns the name of that food item
+#The food item named will be passed into get_nutrition to get nutrition data.
+
 def get_item_options(food_item):
 
     url = 'https://trackapi.nutritionix.com/v2/search/instant'
@@ -15,8 +18,24 @@ def get_item_options(food_item):
         'x-app-id': 'bc4373cf',
         'x-app-key': '68593b7a0aed2aa8b56021e5030ef5a4'
     }
+    while True:
+        try:
+            params = {'query': food_item}
+            response = requests.get(url, params, headers=headers).json()
+            
+            if response.get('common'):
+                break
 
-    response = requests.get(url,params,headers=headers).json()
+        except requests.exceptions.RequestException as e:
+            print('Error making request:', e)
+        except Exception as e:
+            print('An unexpected error occurred:', e)
+
+        print('No options found. Please try another search.')
+        food_item = input('Search food: ')
+
+
+
 
     items = []  # List to hold the food items
 
@@ -47,12 +66,25 @@ def get_item_options(food_item):
             print('-----------------------')
             print('-----------------------')
             count += 1
-    
-        choice = int(input('choice: '))
-        food_choice = items[choice - 1]['food_name']
+
+        while True:
+            try:
+                choice = int(input('choice: '))
+                food_choice = items[choice - 1]['food_name']
+                break  
+            except ValueError:
+                print("Input an integer from 1-20")
+            except IndexError:
+                print("Please choose a number within the valid range.")
+
+
         
-        nutrition_facts = get_nutrition(food_choice)
+        
     
-    return nutrition_facts
+    return food_choice
+
+
+
+
 
 
