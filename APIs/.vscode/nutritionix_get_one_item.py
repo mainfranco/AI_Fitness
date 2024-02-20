@@ -1,7 +1,8 @@
+
 import requests
 import json
 from flask import jsonify
-from nutritionix_nlp_food import get_nutrition
+
 
 #This code lists food options based on a search query and then returns the name of that food item
 #The food item named will be passed into get_nutrition to get nutrition data.
@@ -41,13 +42,15 @@ def get_item_options(food_item):
 
 
     items = []  # List to hold the food items
+
     for entry in response['branded'][:10]:
         item_details = {
             'food_name': entry['brand_name_item_name'],
             'tag_id': entry['nix_brand_id'],
             'serving_unit': entry['serving_unit'],
             'serving_qty': entry['serving_qty'],
-            'calories': entry['nf_calories']
+            'calories': entry['nf_calories'],
+            'brand': True
         }
         items.append(item_details)
     for entry in response['common'][:10]:
@@ -57,7 +60,8 @@ def get_item_options(food_item):
             'tag_id': entry['tag_id'],
             'serving_unit': entry['serving_unit'],
             'serving_qty': entry['serving_qty'],
-            'calories': None
+            'calories': None,
+            'brand' : False
             
         }
         items.append(item_details)
@@ -70,6 +74,7 @@ def get_item_options(food_item):
         serving_unit = i['serving_unit']
         serving_quantity = round(i['serving_qty'],2)
         calories = i['calories']
+
         print(f'option: {count}')
         print(name)
         print('tag id:',tag_id)
@@ -82,21 +87,34 @@ def get_item_options(food_item):
 
     while True:
         try:
-            choice = int(input('Choice #: or press b to exit '))
-            food_choice = items[choice - 1]['food_name']
-            break  
+            choice = input('Choice #: or press any letter to exit ')
+            if choice.isdigit():
+                choice = int(choice)
+                food_choice = (items[choice - 1]['food_name'], items[choice - 1]['tag_id'], items[choice - 1]['brand'])
+                break
+            elif choice.isalpha():
+                food_choice = ("Empty", "Exit Program", "HIII")
+                break
+
+
+                    
+              
         except ValueError:
             print("Input an integer from 1-20")
         except IndexError:
             print("Please choose a number within the valid range.")
 
 
-        
+    # Returns the name of the food if not a brand name   
+    if food_choice[2] == False:
+        return (food_choice[0])
+    
+    # Returns the brand_id if its a brand name and a True statement that can be parsed later on
+    elif food_choice[2] == True:
+        return (food_choice[1], True)
+    
 
-    return food_choice
 
-
-
-
+# get_item_options('grapes')
 
 

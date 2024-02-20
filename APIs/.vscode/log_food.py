@@ -1,7 +1,5 @@
 from nutritionix_nlp_food import get_nutrition
 from nutritionix_get_one_item import get_item_options
-from flask import Flask, render_template
-from flask_sqlalchemy import SQLAlchemy
 import sqlite3
 
 def log_food_entry(query):
@@ -10,8 +8,9 @@ def log_food_entry(query):
     while more_food:
 
         food_choice = get_item_options(query)
+        if food_choice is None:
+            break
         nutrition = get_nutrition(food_choice)
-        print(nutrition)
 
 
         print(food_choice)
@@ -19,31 +18,61 @@ def log_food_entry(query):
         while True:
 
             try:
-                grams = int(input(f'How many grams: '))
+                quantity = input("1 for grams | 2 for serving units:  ")
+                if quantity not in ["1", "2"]:  # Check if the input is not "1" or "2"
+                    raise ValueError("Invalid choice")
+
+                if quantity == "1":
+                    grams = float(input(f'How many grams?: '))
+                    serving_weight_grams = nutrition['serving_weight_grams']
+                    servings = grams / serving_weight_grams
+
+                    entry_log = {}
+                    entry_log['food_name'] = nutrition['food_name']
+                    entry_log['entry_date'] = nutrition['date']
+                    entry_log['img'] = nutrition['photo']
+
+                    # replacing None values with 0
+                    for i in nutrition.keys():
+                        if nutrition[i] == None:
+                            nutrition[i] = float(0)
+                    
+                    # total_calories = servings * calories
+                    for i in ['calories','fat','carbs','protein','cholesterol','sodium','sugars','potassium']:
+                        entry_log[i] = round(servings * nutrition[i],2)
+                    break
+                                
+                                
+                elif quantity == "2":
+                    entry_log = {}
+                    entry_log['food_name'] = nutrition['food_name']
+                    entry_log['entry_date'] = nutrition['date']
+                    entry_log['img'] = nutrition['photo']
+                    
+                    print(f"1 Serving is {nutrition['serving_quantity']}: {nutrition['serving_unit']}")
+                    while True:
+                        try:
+                            serving_amount = float(input("How many servings?: "))
+                        
+                            break
+                        except ValueError:
+                            print("You must enter a number for the serving amount.")
+
+                            
+                   
+                    for i in ['calories','fat','carbs','protein','cholesterol','sodium','sugars','potassium']:
+                        entry_log[i] = round(serving_amount * nutrition[i], 2)
+
+
                 break
             
-            except ValueError:
-                print("please enter an integer")
+            except ValueError as e:
+                print("please enter an integer. Error: ", e)
         print('-----------------------')
         print('-----------------------')
         
-        serving_weight_grams = nutrition['serving_weight_grams']
-        servings = grams / serving_weight_grams
 
-        entry_log = {}
-        entry_log['food_name'] = nutrition['food_name']
-        entry_log['entry_date'] = nutrition['date']
-        entry_log['img'] = nutrition['photo']
 
-        # replacing None values with 0
-        for i in nutrition.keys():
-            if nutrition[i] == None:
-                nutrition[i] = float(0)
-        
-        # total_calories = servings * calories
-        for i in ['calories','fat','carbs','protein','cholesterol','sodium','sugars','potassium']:
-            
-            entry_log[i] = round(servings * nutrition[i],2)
 
      
         with sqlite3.connect("C:/Users/mainf/OneDrive/Desktop/Data Science Projects/Fitness Data Project/APIs/fitness_app.db") as conn:
@@ -103,7 +132,7 @@ def log_food_entry(query):
             
             else:
                 print("Invalid input. Please enter 'Y' for yes or 'N' for no.")
-
+    print("exited program")
             
 query = input('Search for Food: ')
 log_food_entry(query)
