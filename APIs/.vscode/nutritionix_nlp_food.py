@@ -2,6 +2,7 @@ import requests
 import json
 from flask import jsonify
 from nutritionix_get_one_item import get_item_options
+from datetime import datetime
 
 #This code takes a food name and a weight in grams and returns nutrition facts a date and food image.
 
@@ -15,7 +16,7 @@ def get_nutrition(food_item):
         print("Branded Food")
         url = 'https://trackapi.nutritionix.com/v2/search/item'
         response = requests.get(url, headers=headers, params={'nix_item_id': food_item[0]}).json()
-        print(response)
+        
 
     else:
         print('Common Food')
@@ -38,9 +39,9 @@ def get_nutrition(food_item):
         'sugars': response['foods'][0]['nf_sugars'],
         'potassium': response['foods'][0]['nf_potassium'],
         'brand': response['foods'][0]['nix_brand_name'],
-        'date' : response['foods'][0]['consumed_at'],
+        'date' : str(datetime.now()),
         'photo': response['foods'][0]['photo']['thumb']}
-    
+
     for i in nutrition_details:
         if nutrition_details[i] is None:
             nutrition_details[i] = 0
@@ -54,7 +55,3 @@ def get_nutrition(food_item):
 
     return nutrition_details
     
-# query = input("search: ")    
-# food = get_item_options(query)
-
-# get_nutrition(food)

@@ -17,22 +17,7 @@ def create_food_entries_table():
     c = conn.cursor()
 
     # Execute a command: this creates a new table
-    c.execute('''CREATE TABLE IF NOT EXISTS FINAL_FOOD_LOG (
-                 food_name TEXT NOT NULL,
-                 calories REAL,
-                 protein REAL,
-                 carbs REAL,
-                 fat REAL,
-                 cholestoral REAL,
-                 sodium REAL,
-                 potassium REAL,
-                 sugars REAL
-                 date TEXT,
-                 img TEXT
-                 )''')
-    # Commit the changes and close the connection
-    conn.commit()
-    conn.close()
+
 
 @app.route('/create-table')
 def create_table():

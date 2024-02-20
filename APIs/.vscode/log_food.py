@@ -13,8 +13,6 @@ def log_food_entry(query):
         nutrition = get_nutrition(food_choice)
 
 
-        print(food_choice)
-
         while True:
 
             try:
