@@ -13,13 +13,13 @@ def get_nutrition(food_item):
     }
 
     if isinstance(food_item, tuple):
-        print("Branded Food")
+
         url = 'https://trackapi.nutritionix.com/v2/search/item'
         response = requests.get(url, headers=headers, params={'nix_item_id': food_item[0]}).json()
         
 
     else:
-        print('Common Food')
+
         url = 'https://trackapi.nutritionix.com/v2/natural/nutrients'
         data = {'query': food_item}
         response = requests.post(url, headers=headers, json=data).json()
@@ -46,11 +46,6 @@ def get_nutrition(food_item):
         if nutrition_details[i] is None:
             nutrition_details[i] = 0
      
-
-
-
-
-
 
 
     return nutrition_details

@@ -2,7 +2,13 @@ from nutritionix_nlp_food import get_nutrition
 from nutritionix_get_one_item import get_item_options
 import sqlite3
 
+
 def log_food_entry(query):
+    if query == 'q' or query == "Q":
+        print("Quit program")
+        return 
+    else:
+        pass
 
     more_food = True
     while more_food:
@@ -16,11 +22,26 @@ def log_food_entry(query):
         while True:
 
             try:
+            
+                print("Your selection: ", nutrition['food_name'])
+                print("Calories: ", nutrition['calories'])
+                print("Protein: ", nutrition['protein'])
+                print("Carbs: ", nutrition['carbs'])
+                print("Fats: ", nutrition['fat'])
+                print("Serving grams: ", nutrition['serving_weight_grams'])
+                print("Serving unit: ", nutrition['serving_unit'])
+                print('------------------------------')
+                print('------------------------------')
+
                 quantity = input("1 for grams | 2 for serving units:  ")
+                if quantity == 'q' or quantity == 'Q':
+                    print("Quit program")
+                    return
+                
                 if quantity not in ["1", "2"]:  # Check if the input is not "1" or "2"
                     raise ValueError("Invalid choice")
 
-                if quantity == "1":
+                if quantity == "1" and nutrition['serving_weight_grams'] != 0:
                     grams = float(input(f'How many grams?: '))
                     serving_weight_grams = nutrition['serving_weight_grams']
                     servings = grams / serving_weight_grams
@@ -41,12 +62,15 @@ def log_food_entry(query):
                     break
                                 
                                 
-                elif quantity == "2":
+                elif quantity == "2" or (quantity == "1" and nutrition['serving_weight_grams'] == 0):
                     entry_log = {}
                     entry_log['food_name'] = nutrition['food_name']
                     entry_log['entry_date'] = nutrition['date']
                     entry_log['img'] = nutrition['photo']
                     
+                    if nutrition['serving_weight_grams'] == 0:
+                        print('serving grams not available. Use servings')
+
                     print(f"1 Serving is {nutrition['serving_quantity']}: {nutrition['serving_unit']}")
                     while True:
                         try:
@@ -111,11 +135,14 @@ def log_food_entry(query):
                     
             
             
-            print(f'Final Nutrients: {output}')
+            print('Entry Log')
             print('-------------------------')
+            for key, value in entry_log.items():
+                print(f"{key}: {value}")
             print('-------------------------')
-            print('Food logged succesfully')
+            print('Food logged successfully')
             print('-------------------------')
+
             
         while True:
             keep_going = input('Do you want to log another item: Y or N: ').upper().strip()
@@ -132,9 +159,10 @@ def log_food_entry(query):
                 print("Invalid input. Please enter 'Y' for yes or 'N' for no.")
     print("exited program")
             
-query = input('Search for Food: ')
-log_food_entry(query)
-
+print("Food Tracker")
+print("Press q to quit the program at any time")
+print("Or press s to return the Search screen at any time")
+log_food_entry(input("Search food: "  ))
 
 
 

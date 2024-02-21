@@ -40,7 +40,6 @@ def get_item_options(food_item):
 
 
     items = []  # List to hold the food items
-
     for entry in response['branded'][:10]:
         item_details = {
             'food_name': entry['brand_name_item_name'],
@@ -85,12 +84,18 @@ def get_item_options(food_item):
 
     while True:
         try:
-            choice = input('Choice #: or press any letter to exit ')
+            choice = input('Choice #: or press q to exit ')
+            print('----------------------------')
+            print('----------------------------')
+            if choice == 'q' or choice == 'Q':
+                print("Quit program")
+                return
+            
             if choice.isdigit():
                 choice = int(choice)
                 food_choice = (items[choice - 1]['food_name'], items[choice - 1]['tag_id'], items[choice - 1]['brand'])
                 break
-            elif choice.isalpha():
+            elif choice == 'q' or choice == 'Q':
                 food_choice = ("Empty", "Exit Program", "HIII")
                 break
 

@@ -1,9 +1,9 @@
-from nutritionix_nlp_food import get_nutrition
-from nutritionix_get_one_item import get_item_options
+
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from log_food import log_food_entry
-import sqlite3
+from nutritionix_get_one_item import get_item_options
+from nutritionix_nlp_food import get_nutrition
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///C:/Users/mainf/OneDrive/Desktop/Data Science Projects/Fitness Data Project/APIs/fitness_app.db"
@@ -11,18 +11,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///C:/Users/mainf/OneDrive/Deskt
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-def create_food_entries_table():
-    # Connect to your database
-    conn = sqlite3.connect('fitness_app.db')
-    c = conn.cursor()
 
-    # Execute a command: this creates a new table
-
-
-@app.route('/create-table')
-def create_table():
-    create_food_entries_table()
-    return "Table created successfully!"
 
 
 @app.route('/')
@@ -32,7 +21,7 @@ def home():
 
 @app.route('/food/<item_name>')
 def food_options(item_name):
-    return log_food_entry(item_name)
+    return get_item_options(item_name)
 
 
 
