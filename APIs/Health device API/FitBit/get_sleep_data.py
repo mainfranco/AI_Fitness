@@ -37,7 +37,7 @@ def get_sleep_data(client_name):
             if stop_loop == True:
                 print("Different problem")
                 break
-            new_access_refresh_tokens()
+            new_access_refresh_tokens(client_name=client_name)
             stop_loop = True  
 
 
@@ -85,8 +85,6 @@ for entry in response['sleep']:
 df = pd.DataFrame(sleep_data_entries)
 
 print(df)
-
-df.to_csv("whitney_sleep_data_4.csv")
 
 
 #These are the different sleep states throughout the night

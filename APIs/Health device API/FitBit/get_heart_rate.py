@@ -31,16 +31,18 @@ def get_heart_data(client_name):
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             print('Good request')
-            print(response.json())
-            break  # Exit the loop on success
+            return response.json()
+
         elif response.status_code == 401:  # Handle expired or invalid token
             print("Token might be expired, refreshing...")
 
             if stop_loop == True:
                 print("Different issue")
                 break
-            new_access_refresh_tokens()
+            new_access_refresh_tokens(client_name=client_name)
             stop_loop = True
 
 
-get_heart_data('Whitney')
+response = get_heart_data('Whitney')
+
+print(response['activities-heart'][0])
