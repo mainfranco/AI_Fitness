@@ -14,7 +14,7 @@ def get_activity(client_name):
         url = f"https://api.fitbit.com/1/user/{user_id}/activities/list.json"
 
         params = {
-            'afterDate': '2024-01-19',
+            'afterDate': '2023-03-10',
             'sort': 'asc',
             'limit': 100,
             'offset': 0
@@ -43,7 +43,8 @@ def get_activity(client_name):
             'original_duration': entry.get('originalDuration'),
             'start_time': entry.get('startTime'),
             'steps': entry.get('steps'),
-            'total_minutes_for_activity': entry.get('activeZoneMinutes',{}).get('totalMinutes',{})
+            'total_minutes_for_activity': entry.get('activeZoneMinutes',{}).get('totalMinutes',{}),
+            'logId':entry.get('logId')
             }
 
             activity_entries.append(activity_data)
