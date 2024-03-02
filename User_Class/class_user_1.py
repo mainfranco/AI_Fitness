@@ -29,13 +29,13 @@ class User:
         users_query = '''
         CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,
-            name TEXT,
-            data BLOB  -- Column for storing pickled User objects
+            name TEXT
         )'''
 
-        create_food_log_query = f'''
-        CREATE TABLE IF NOT EXISTS food_log_{self.id} (
+        create_food_log_query = '''
+        CREATE TABLE IF NOT EXISTS food_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
             food_name TEXT NOT NULL,
             calories INTEGER,
             protein DECIMAL,
@@ -47,41 +47,50 @@ class User:
             sugars DECIMAL,
             entry_date DATE,
             img TEXT,
-            user_id TEXT
+            FOREIGN KEY(user_id) REFERENCES users(id)
         )'''
         
-        create_workout_log_query = f'''
-        CREATE TABLE IF NOT EXISTS workout_log_{self.id} (
+        create_exercise_log_query = '''
+        CREATE TABLE IF NOT EXISTS exercises (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
             date TEXT NOT NULL,
             exercise_name TEXT,
-            weight_set_1 DECIMAL,
-            reps_set_1 DECIMAL,
-            weight_set_2 DECIMAL,
-            reps_set_2 DECIMAL,
-            weight_set_3 DECIMAL,
-            reps_set_3 DECIMAL,
-            weight_set_4 DECIMAL,
-            reps_set_4 DECIMAL,
             notes TEXT,
-            user_id TEXT
-        )''' 
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )'''
 
-        create_tokens_codes_log_query = f'''
-        CREATE TABLE IF NOT EXISTS tokens_codes_log_{self.id} (
+
+        create_sets_log_query = '''
+        CREATE TABLE IF NOT EXISTS exercise_sets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            exercise_id INTEGER NOT NULL,
+            weight DECIMAL,
+            reps DECIMAL,
+            user_id TEXT,
+            FOREIGN KEY(exercise_id) REFERENCES exercises(id),
+            FOREIGN KEY(user_id) REFERENCES users(id)
+            )'''      
+
+
+        create_tokens_codes_log_query = '''
+        CREATE TABLE IF NOT EXISTS tokens_codes_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
             last_date TEXT NOT NULL,
             fitbit_request_token TEXT,
             fitbit_access_token TEXT,
             fitbit_refresh_token TEXT,
-            user_id TEXT
+            fitbit_user_id TEXT,
+            FOREIGN KEY(user_id) REFERENCES users(id)
         )'''
 
         # Execute the create table query
         cursor.execute(create_food_log_query)
-        cursor.execute(create_workout_log_query)
+        cursor.execute(create_exercise_log_query)
         cursor.execute(create_tokens_codes_log_query)
         cursor.execute(users_query)
+        cursor.execute(create_sets_log_query)
         
         # Commit the changes and close the connection
         conn.commit()
@@ -91,17 +100,15 @@ class User:
 
     def save_to_db(self):
 
-        pickled_user = pickle.dumps(self)
-
         # Connect to the SQLite database
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
         # Insert/Update the pickled User object into the users table
         cursor.execute('''
-            INSERT INTO users (id, name, data) VALUES (?, ?, ?)
+            INSERT INTO users (id, name) VALUES (?, ?)
             ON CONFLICT(id) DO UPDATE SET name = excluded.name, data = excluded.data
-        ''', (self.id, self.name, pickled_user))
+        ''', (self.id, self.name))
 
         # Commit the changes and close the connection
         conn.commit()
@@ -125,10 +132,20 @@ class User:
             'name': search_exercise
         }
 
-        response = requests.get(url, headers=headers, params=params).json()
+        
+        response = requests.get(url, headers=headers, params=params)
+        if response.status_code != 200:
+            print('Good Request')
 
+        elif response.status_code == 401:
+            print('Authorization Problem')
+            return None
+        
+        elif response.status_code == 400:
+            print('Bad Request')
+            return None
 
-
+        response = response.json()
         choice = 1
         for i in response:
             print(f'[{choice}]', i['name'])
@@ -137,39 +154,43 @@ class User:
         exercise_choice = int(input('choose exercise: '))
 
         print(response[exercise_choice - 1]['name'])
-
         return response[exercise_choice - 1]['name']
 
 
 
 
-    def log_exercise(self, exercise):
+    def log_exercise(self, exercise_name):
 
-        date = datetime.now()
-        date = date.strftime('%Y-%m-%d')
+        date = datetime.now().strftime('%Y-%m-%d')
+        exercise = self.search_exercise(exercise_name)
+        
+        notes = 'Your notes here' 
+        user_id = self.id 
 
-        exercise = self.search_exercise(exercise)
-
-        log = [exercise]
-        set_num = 1
-        while True:
+        # Insert the exercise into the exercises table
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
             
-            data = {
-            f'set_{set_num}_weight' :input('weight: '),
-            f'reps_{set_num}' :input('reps: ')
+            # Insert the exercise record and get its ID
+            cursor.execute(f'''INSERT INTO exercises (date, exercise_name, notes, user_id) 
+                            VALUES (?, ?, ?, ?)''', (date, exercise, notes, user_id))
+            exercise_id = cursor.lastrowid  # Retrieve the ID of the newly inserted exercise
+            
+            # Prompt the user for set details and insert each set into the exercise_sets table
+            while True:
+                weight = input('Weight for the set (lbs): ')
+                reps = input('Reps: ')
+                
+                cursor.execute(f'''INSERT INTO exercise_sets (exercise_id, weight, reps, user_id) 
+                                VALUES (?, ?, ?, ?)''', (exercise_id, weight, reps, self.id))
+                
+                if input('Add another set? (y/n): ').lower() == 'n':
+                    break
+        
+        conn.commit()  # Commit outside the loop
+        print('Exercise logged successfully.')
 
-            }
 
-            log.append(data)
-
-            set_num +=1
-
-            if input('stop, y or n') == 'y':
-
-                log.append(date)
-                break
-
-        print(log)
 
 
 
@@ -203,10 +224,6 @@ class User:
         self.fitbit_request_token = request_token
         self.fitbit_code_verifier = code_verifier
         self.fitbit_code_challenge = code_challenge
-
-        # Saves the object to db with its new attributes
-        self.save_to_db()
-
 
         print('code_verifier, code_challenge and request token saved succesfully')
 
@@ -254,11 +271,19 @@ class User:
         self.access_token_fitbit = response.get('access_token')
         self.refresh_token_fitbit = response.get('refresh_token')
         self.user_id_fitbit = response.get('user_id')
+        
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f'''INSERT INTO tokens_codes_log (last_date, fitbit_request_token, fitbit_access_token, fitbit_refresh_token, fitbit_user_id, user_id) 
+                            VALUES (?, ?, ?, ?, ?, ?)''',
+                        (datetime.now(),
+                            self.fitbit_request_token,
+                            response.get('access_token'),
+                            response.get('refresh_token'),
+                            response.get('user_id'),
+                            self.id,))
 
-        # Saves the object to db with its new attributes
-        self.save_to_db()       
-
-
+    
 
 
     def new_access_refresh_tokens_fitbit(self):
@@ -285,8 +310,17 @@ class User:
         self.refresh_token_fitbit = response['refresh_token']
         self.access_token_fitbit = response['access_token']
 
-        # Saves the object to db with its new attributes
-        self.save_to_db()
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute(f'''INSERT INTO tokens_codes_log (last_date, fitbit_request_token, fitbit_access_token, fitbit_refresh_token, fitbit_user_id, user_id) 
+                        VALUES (?, ?, ?, ?, ?, ?)''',
+                    (datetime.now(),
+                    self.fitbit_request_token,
+                    response.get('access_token'),
+                    response.get('refresh_token'),
+                    response.get('user_id'),
+                    self.id,)) 
 
 
 
@@ -751,7 +785,7 @@ class User:
 
                 
                 
-                cursor.execute(f'''INSERT INTO food_log_{self.id} (food_name, calories, protein, carbs, fat, cholesterol, sodium, potassium, sugars, entry_date, img, user_id) 
+                cursor.execute(f'''INSERT INTO food_log (food_name, calories, protein, carbs, fat, cholesterol, sodium, potassium, sugars, entry_date, img, user_id) 
                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                             (entry_log['food_name'],
                             entry_log['calories'],
@@ -794,21 +828,101 @@ class User:
 
 
 
+   
+   
     # PULLING DATA
 
-    def pull_data(self, table):
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
 
-        # Query the database for all entries in food_logs
-        cursor.execute(f'SELECT * FROM {table}')
+    def pull_data(self):
+        while True:
+            action = input("Enter 'l' to show all tables, a table name to query it, or 'e' to quit: ").strip()
+            if action.lower() == 'e':  # Allow the user to exit
+                print("Exiting function.")
+                return
+            
+            try:
+                conn = sqlite3.connect(self.db_path)
+                cursor = conn.cursor()
 
-        # Fetch all rows from the query
-        rows = cursor.fetchall()
+                if action.lower() == 'l':  # List all table names
+                    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                    tables = cursor.fetchall()
+                    print("Tables in the database:")
+                    for table in tables:
+                        print(table[0])
+                else:
+                    # Query the database for all entries in the specified table
+                    cursor.execute(f'SELECT * FROM {action}')
 
-        # Iterate over the rows and print them
-        for row in rows:
-            print(row)
+                    # Fetch all rows from the query
+                    rows = cursor.fetchall()
 
-        # Close the connection
-        conn.close()
+                    # Check if rows are empty
+                    if not rows:
+                        print(f"No data found in table '{action}'.")
+                    else:
+                        # Iterate over the rows and print them
+                        for row in rows:
+                            print(row)
+                    
+                    # User queried a specific table, so break after showing the data
+                    break
+
+            except sqlite3.OperationalError as e:
+                if "no such table" in str(e):
+                    print(f"No table with the name '{action}' exists. Please try again.")
+                else:
+                    print(f"An error occurred: {e}")
+            
+            finally:
+                if conn:
+                    conn.close()
+
+
+
+
+    def dump_data(self):
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+
+            # Get the table name from the user
+            table_name = input("Enter the table name you want to dump data into or 'exit' to quit: ").strip()
+            if table_name.lower() == 'exit':
+                print("Exiting function.")
+                return
+
+            try:
+                # Get the column names from the specified table
+                cursor.execute(f"PRAGMA table_info({table_name})")
+                columns_info = cursor.fetchall()
+                if not columns_info:
+                    print(f"No table named '{table_name}' found.")
+                    return
+
+                columns = [info[1] for info in columns_info]  # Column names are at index 1
+                print(f"Columns in '{table_name}': {', '.join(columns)}")
+
+                # Prompt the user for each column value
+                values = []
+                for column in columns:
+                    # Skip id or any autoincrement column
+                    if column != 'id' and not column.endswith('_id'):  
+                        value = input(f"Enter value for {column}: ")
+                        values.append(value)
+
+                # Construct the INSERT statement dynamically
+                placeholders = ', '.join(['?'] * len(values))
+                cursor.execute(f"INSERT INTO {table_name} ({', '.join(columns[1:])}) VALUES ({placeholders})", values)
+
+                print(f"Data has been successfully dumped into '{table_name}'.")
+                
+                # Fetch all rows from the table to display them
+                cursor.execute(f"SELECT * FROM {table_name}")
+                rows = cursor.fetchall()
+                for row in rows:
+                    print(row)
+
+            except sqlite3.OperationalError as e:
+                print(f"An error occurred: {e}")
+
+
