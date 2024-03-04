@@ -7,9 +7,23 @@ import hashlib
 import os
 from requests.auth import HTTPBasicAuth
 import sqlite3
+from dotenv import load_dotenv
+
 
 
 class User:
+
+    load_dotenv(dotenv_path='secrets.env')
+    fitbit_client_secret = os.getenv('CLIENT_SECRET_FITBIT')
+    ninjas_api = os.getenv('API_NINJAS_KEY')
+    fitbit_client_id = os.getenv('CLIENT_ID_FITBIT')
+
+    nutritionix_api = os.getenv('NUTRITIONIX_API')
+    nutritionix_app_id = os.getenv('NUTRITIONIX_APP_ID')
+
+    database_path = os.getenv('fitness_app.db')
+
+    
     def __init__(self, name, user_id=None):  # Add user_id as an optional parameter
         self.name = name
         self.db_path = 'fitness_app.db'
@@ -64,7 +78,7 @@ class User:
         url = f'https://api.api-ninjas.com/v1/exercises'
 
         headers = {
-            'X-Api-Key': 'p4CCOHW0yaZsa/wRWHHAyA==d7tJ0bJnkYVnEKoZ'
+            'X-Api-Key': self.ninjas_api
         }
 
         params = {
@@ -144,7 +158,7 @@ class User:
         code_challenge = base64.urlsafe_b64encode(sha256_of_verifier).rstrip(b'=').decode('utf-8')
 
         params = {
-            "client_id": "23RQZC",
+            "client_id": self.fitbit_client_id,
             "response_type": "code",
             "scope": "heartrate sleep weight respiratory_rate activity oxygen_saturation temperature",
             "redirect_uri": "https://localhost:3000/callback",
@@ -198,8 +212,8 @@ class User:
 
 
 
-        client_id = "23RQZC"
-        client_secret = "16d65560c4ba5c04a8a6d6aaf60fbadc"
+        client_id = self.fitbit_client_id
+        client_secret = self.fitbit_client_secret
         url = "https://api.fitbit.com/oauth2/token"
 
         payload = {
@@ -261,8 +275,8 @@ class User:
             else:
                 print("No existing tokens found for user.")
                 return
-        client_id = "23RQZC"
-        client_secret = "16d65560c4ba5c04a8a6d6aaf60fbadc"
+        client_id = self.fitbit_client_id
+        client_secret = self.fitbit_client_secret
 
         payload = {
             'refresh_token': refresh_token,
@@ -368,7 +382,6 @@ class User:
                 "wake_30dayAvgMin": entry.get('levels', {}).get('summary', {}).get('wake', {}).get('thirtyDayAvgMinutes'),
             }
             sleep_data_entries.append(sleep_data) 
-
 
 
             with sqlite3.connect(self.db_path) as conn:
@@ -516,8 +529,8 @@ class User:
         }
 
         headers = {
-            'x-app-id': 'bc4373cf',
-            'x-app-key': '68593b7a0aed2aa8b56021e5030ef5a4'
+            'x-app-id': self.nutritionix_app_id,
+            'x-app-key': self.nutritionix_api
         }
         while True:
             try:
@@ -618,8 +631,8 @@ class User:
 
     def get_nutrition(self,food_item):
         headers = {
-            'x-app-id': 'bc4373cf',
-            'x-app-key': '68593b7a0aed2aa8b56021e5030ef5a4',
+            'x-app-id': self.nutritionix_app_id,
+            'x-app-key': self.nutritionix_api,
         }
 
         if isinstance(food_item, tuple):
