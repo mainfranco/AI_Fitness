@@ -7,108 +7,48 @@ import hashlib
 import os
 from requests.auth import HTTPBasicAuth
 import sqlite3
-import pickle
+
 
 class User:
-    def __init__(self, name, id,db_path='fitness_app.db'):
-
+    def __init__(self, name, user_id=None):  # Add user_id as an optional parameter
         self.name = name
-        self.id = id
-        self.db_path = db_path
-        self.new_sql_tables()
-        self.save_to_db()
+        self.db_path = 'fitness_app.db'
+        self.id = user_id  # Set id to the provided user_id if it's not None
+
+        if user_id is None:  # Only insert into the DB if user_id wasn't provided
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    INSERT INTO users (name) VALUES (?)
+                ''', (self.name,))
+                self.id = cursor.lastrowid
+                conn.commit()
+
+    @classmethod
+    def login(cls, name):
+        db_path = 'fitness_app.db'
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT id FROM users WHERE name = ?
+            ''', (name,))
+            result = cursor.fetchone()
+            if result:
+                user_id = result[0]
+                return cls(name=name, user_id=user_id)  # Now this line should work
+            else:
+                print("User not found.")
+                return None
 
 
 
-    def new_sql_tables(self):
-
-        conn = sqlite3.connect(self.db_path) 
-        cursor = conn.cursor()
-
-
-        users_query = '''
-        CREATE TABLE IF NOT EXISTS users (
-            id TEXT PRIMARY KEY,
-            name TEXT
-        )'''
-
-        create_food_log_query = '''
-        CREATE TABLE IF NOT EXISTS food_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT NOT NULL,
-            food_name TEXT NOT NULL,
-            calories INTEGER,
-            protein DECIMAL,
-            carbs DECIMAL,
-            fat DECIMAL,
-            cholesterol DECIMAL,
-            sodium DECIMAL,
-            potassium DECIMAL,
-            sugars DECIMAL,
-            entry_date DATE,
-            img TEXT,
-            FOREIGN KEY(user_id) REFERENCES users(id)
-        )'''
-        
-        create_exercise_log_query = '''
-        CREATE TABLE IF NOT EXISTS exercises (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT NOT NULL,
-            date TEXT NOT NULL,
-            exercise_name TEXT,
-            notes TEXT,
-            FOREIGN KEY(user_id) REFERENCES users(id)
-        )'''
-
-
-        create_sets_log_query = '''
-        CREATE TABLE IF NOT EXISTS exercise_sets (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            exercise_id INTEGER NOT NULL,
-            weight DECIMAL,
-            reps DECIMAL,
-            user_id TEXT,
-            FOREIGN KEY(exercise_id) REFERENCES exercises(id),
-            FOREIGN KEY(user_id) REFERENCES users(id)
-            )'''      
-
-
-        create_tokens_codes_log_query = '''
-        CREATE TABLE IF NOT EXISTS tokens_codes_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT NOT NULL,
-            last_date TEXT NOT NULL,
-            fitbit_request_token TEXT,
-            fitbit_access_token TEXT,
-            fitbit_refresh_token TEXT,
-            fitbit_user_id TEXT,
-            FOREIGN KEY(user_id) REFERENCES users(id)
-        )'''
-
-        # Execute the create table query
-        cursor.execute(create_food_log_query)
-        cursor.execute(create_exercise_log_query)
-        cursor.execute(create_tokens_codes_log_query)
-        cursor.execute(users_query)
-        cursor.execute(create_sets_log_query)
-        
-        # Commit the changes and close the connection
-        conn.commit()
-        conn.close()
-
-
-
-    def save_to_db(self):
-
-        # Connect to the SQLite database
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-
-        # Insert/Update the pickled User object into the users table
-        cursor.execute('''
-            INSERT INTO users (id, name) VALUES (?, ?)
-            ON CONFLICT(id) DO UPDATE SET name = excluded.name, data = excluded.data
-        ''', (self.id, self.name))
+    def save_to_db(self, table):
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f'''
+                INSERT INTO {table} (name) VALUES (?)
+            ''', (self.name,))
+            self.id = cursor.lastrowid
 
         # Commit the changes and close the connection
         conn.commit()
@@ -221,23 +161,41 @@ class User:
         request_token = input("Paste Request Token: ")
 
 
-        self.fitbit_request_token = request_token
-        self.fitbit_code_verifier = code_verifier
-        self.fitbit_code_challenge = code_challenge
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''INSERT INTO request_tokens_fitbit (user_id, date, fitbit_request_token, fitbit_code_verifier, fitbit_code_challenge) 
+                            VALUES (?, ?, ?, ?, ?)''', (self.id, date, request_token, code_verifier, code_challenge))
+
 
         print('code_verifier, code_challenge and request token saved succesfully')
 
 
     
     def access_refresh_tokens_fitbit(self):
-        # Check if either attribute does not exist
-        if not hasattr(self, 'fitbit_request_token') or not hasattr(self, 'fitbit_code_verifier'):
-            print("Need request token and or code verifier")
-            return None
+
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''SELECT fitbit_request_token 
+                            FROM request_tokens_fitbit 
+                            WHERE user_id = ? 
+                            ORDER BY date DESC
+                            LIMIT 1''', (self.id,))  # Note the comma to make it a tuple
+            
+            result = cursor.fetchone()
+            request_token = result[0] if result else None  # Check if result is not None
+
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''SELECT fitbit_code_verifier 
+                            FROM request_tokens_fitbit 
+                            WHERE user_id = ? 
+                            ORDER BY date DESC
+                            LIMIT 1''', (self.id,))  # Note the comma to make it a tuple
+            
+            result = cursor.fetchone()
+            code_verifier = result[0] if result else None  # Check if result is not None
 
 
-        request_token = self.fitbit_request_token
-        code_verifier = self.fitbit_code_verifier
 
 
         client_id = "23RQZC"
@@ -267,17 +225,12 @@ class User:
             return None
         
         response = response.json()
-
-        self.access_token_fitbit = response.get('access_token')
-        self.refresh_token_fitbit = response.get('refresh_token')
-        self.user_id_fitbit = response.get('user_id')
         
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(f'''INSERT INTO tokens_codes_log (last_date, fitbit_request_token, fitbit_access_token, fitbit_refresh_token, fitbit_user_id, user_id) 
-                            VALUES (?, ?, ?, ?, ?, ?)''',
+            cursor.execute(f'''INSERT INTO tokens_codes_log (last_date, fitbit_access_token, fitbit_refresh_token, fitbit_user_id, user_id) 
+                            VALUES (?, ?, ?, ?, ?)''',
                         (datetime.now(),
-                            self.fitbit_request_token,
                             response.get('access_token'),
                             response.get('refresh_token'),
                             response.get('user_id'),
@@ -287,9 +240,27 @@ class User:
 
 
     def new_access_refresh_tokens_fitbit(self):
-
-
-        refresh_token = self.refresh_token_fitbit
+        # Connect to the SQLite database
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            # Query to select the most recent refresh_token for the user
+            cursor.execute('''
+                SELECT fitbit_refresh_token FROM tokens_codes_log 
+                WHERE user_id = ? 
+                ORDER BY last_date DESC 
+                LIMIT 1
+            ''', (self.id,))
+            
+            # Fetch the result
+            result = cursor.fetchone()
+            
+            # If there's a result, update the refresh_token, otherwise, handle the absence
+            if result:
+                refresh_token = result[0]
+            else:
+                print("No existing tokens found for user.")
+                return
         client_id = "23RQZC"
         client_secret = "16d65560c4ba5c04a8a6d6aaf60fbadc"
 
@@ -307,16 +278,12 @@ class User:
 
         response = requests.post(url, auth=auth,data=payload, headers=headers).json()
 
-        self.refresh_token_fitbit = response['refresh_token']
-        self.access_token_fitbit = response['access_token']
-
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute(f'''INSERT INTO tokens_codes_log (last_date, fitbit_request_token, fitbit_access_token, fitbit_refresh_token, fitbit_user_id, user_id) 
-                        VALUES (?, ?, ?, ?, ?, ?)''',
+        cursor.execute(f'''INSERT INTO tokens_codes_log (last_date, fitbit_access_token, fitbit_refresh_token, fitbit_user_id, user_id) 
+                        VALUES (?, ?, ?, ?, ?)''',
                     (datetime.now(),
-                    self.fitbit_request_token,
                     response.get('access_token'),
                     response.get('refresh_token'),
                     response.get('user_id'),
@@ -327,12 +294,11 @@ class User:
     def get_sleep_data(self, after_date, amount=100):
 
         stop_loop = False
+        fitbit_user_id, fitbit_access_token = self.pull_fitbit_access_and_userid()
+
         while True:
 
-            access_token = self.access_token_fitbit
-            user_id = self.user_id_fitbit
-
-            url = f"https://api.fitbit.com/1.2/user/{user_id}/sleep/list.json"
+            url = f"https://api.fitbit.com/1.2/user/{fitbit_user_id}/sleep/list.json"
             params = {
                 # 'beforeDate': None,  # Omit if not required or handled dynamically within the loop
                 'afterDate': after_date,
@@ -341,7 +307,7 @@ class User:
                 'offset': 0
             }
             headers = {
-                "Authorization": f'Bearer {access_token}'
+                "Authorization": f'Bearer {fitbit_access_token}'
             }
 
             response = requests.get(url, params=params, headers=headers)
@@ -355,7 +321,7 @@ class User:
 
                 if stop_loop == True:
                     print("Different problem")
-                    break
+                    return None
 
                 #This updates access and refresh tokens
                 self.new_access_refresh_tokens_fitbit()
@@ -375,6 +341,7 @@ class User:
         for entry in response['sleep']:
             # Using `.get(key, default)` to avoid KeyError if key doesn't exist
             sleep_data = {
+                "user_id": self.id,
                 "date": entry.get('dateOfSleep'),
                 "duration_ms": entry.get('duration'),
                 "efficiency": entry.get('efficiency'),
@@ -402,7 +369,17 @@ class User:
             }
             sleep_data_entries.append(sleep_data) 
 
-            print(sleep_data)  
+
+
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                for sleep_data in sleep_data_entries:
+                    placeholders = ', '.join(['?'] * len(sleep_data))
+                    columns = ', '.join(sleep_data.keys())
+                    values = tuple(sleep_data.values())
+                    cursor.execute(f"INSERT INTO sleep_data ({columns}) VALUES ({placeholders})", values)
+
+
 
     def get_heart_data(self):
     # Get today's date
@@ -417,13 +394,12 @@ class User:
         stop_loop = False
         while True:
             
-            access_token = self.access_token_fitbit
-            user_id = self.user_id_fitbit
+            fitbit_user_id, fitbit_access_token = self.pull_fitbit_access_and_userid()
 
-            url = f"https://api.fitbit.com/1/user/{user_id}/activities/heart/date/{one_week_ago}/today.json"
+            url = f"https://api.fitbit.com/1/user/{fitbit_user_id}/activities/heart/date/{one_week_ago}/today.json"
 
             headers = {
-                "Authorization": f'Bearer {access_token}'
+                "Authorization": f'Bearer {fitbit_access_token}'
             }
 
             response = requests.get(url, headers=headers)
@@ -447,13 +423,12 @@ class User:
 
 
     def get_activity(self, after_date,amount=100):
+
         stop_loop = False
+        fitbit_user_id, fitbit_access_token = self.pull_fitbit_access_and_userid()
         while True:
 
-            access_token = self.access_token_fitbit
-            user_id = self.user_id_fitbit
-
-            url = f"https://api.fitbit.com/1/user/{user_id}/activities/list.json"
+            url = f"https://api.fitbit.com/1/user/{fitbit_user_id}/activities/list.json"
 
             params = {
                 'afterDate': after_date,
@@ -463,7 +438,7 @@ class User:
             }
 
             headers = {
-                "Authorization": f'Bearer {access_token}'
+                "Authorization": f'Bearer {fitbit_access_token}'
             }
 
             response = requests.get(url, params=params, headers=headers).json()
@@ -852,7 +827,7 @@ class User:
                         print(table[0])
                 else:
                     # Query the database for all entries in the specified table
-                    cursor.execute(f'SELECT * FROM {action}')
+                    cursor.execute(f'SELECT * FROM {action} WHERE user_id = {self.id}')
 
                     # Fetch all rows from the query
                     rows = cursor.fetchall()
@@ -904,8 +879,13 @@ class User:
 
                 # Prompt the user for each column value
                 values = []
+
                 for column in columns:
                     # Skip id or any autoincrement column
+
+                    if column.endswith('_id'):
+                        values.append(self.id)
+
                     if column != 'id' and not column.endswith('_id'):  
                         value = input(f"Enter value for {column}: ")
                         values.append(value)
@@ -926,3 +906,21 @@ class User:
                 print(f"An error occurred: {e}")
 
 
+
+    def pull_fitbit_access_and_userid(self): 
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor() 
+            cursor.execute('''SELECT fitbit_user_id, fitbit_access_token 
+                            FROM tokens_codes_log
+                            WHERE user_id = ?
+                            ORDER BY last_date DESC
+                            LIMIT 1''', (self.id,))  # Use a parameterized query
+            
+            result = cursor.fetchone()  # Use fetchone() since we expect at most one row
+            if result:
+                fitbit_user_id, access_token = result  # Unpack the tuple
+            else:
+                fitbit_user_id = None
+                access_token = None
+            
+            return fitbit_user_id, access_token
