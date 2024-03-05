@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Food Log</title>
+</head>
+<body>
+    <h1>Your Food Log</h1>
+    {% if food_log %}
+        <table>
+            <tr>
+                <th>Food Name</th>
+                <th>Calories</th>
+                <th>Protein</th>
+                <th>Carbs</th>
+                <th>Fat</th>
+                <th>Cholesterol</th>
+                <th>Sodium</th>
+                <th>Potassium</th>
+                <th>Sugars</th>
+                <th>Date</th>
+                <!-- Add more columns as needed -->
+            </tr>
+            {% for entry in food_log %}
+                <tr>
+                    <td>{{ entry[2] }}</td>
+                    <td>{{ entry[3] }}</td>
+                    <td>{{ entry[4] }}g</td>
+                    <td>{{ entry[5] }}g</td>
+                    <td>{{ entry[6] }}g</td>
+                    <td>{{ entry[7] }}mg</td>
+                    <td>{{ entry[8] }}mg</td>
+                    <td>{{ entry[9] }}mg</td>
+                    <td>{{ entry[10] }}g</td>
+                    <td>{{ entry[11] }}</td>
+                    <!-- Display other fields as needed -->
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No entries found.</p>
+    {% endif %}
+</body>
+</html>

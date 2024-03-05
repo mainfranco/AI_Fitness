@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        .result-item {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search Results</h1>
+
+    {% if results %}
+        {% for result in results %}
+            <div class="result-item">
+                <h3>{{ result.food_name }}</h3>
+                <p>Tag ID: {{ result.tag_id }}</p>
+                <p>Serving Unit: {{ result.serving_unit }}</p>
+                <p>Serving Quantity: {{ result.serving_qty }}</p>
+                <p>Calories: {{ result.calories }}</p>
+                <p>Brand: {{ result.brand }}</p>
+
+                <!-- Form to get nutrition information for this food item -->
+                <form action="/get_nutrition" method="post">
+                    <input type="hidden" name="food_name" value="{{ result.food_name }}">
+                    <input type="hidden" name="tag_id" value="{{ result.tag_id }}">
+                    <!-- Use 'True' or 'False' as value depending on whether the item is branded -->
+                    <input type="hidden" name="is_branded" value="{{ 'True' if result.brand else 'False' }}">
+                    <button type="submit">Get Nutrition Info</button>
+                </form>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No results found. Try a new search.</p>
+    {% endif %}
+
+    <a href="/">Back to Search</a>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nutrition Information</title>
+    <style>
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Nutrition Information</h1>
+    <h2>Food was logged successfully!</h2>
+    <p>Food Name: {{ nutrition.food_name }}</p>
+
+    <p>Grams: {{ nutrition.grams }}</p>
+    <p>Servings: {{ nutrition.servings }}</p>
+    <p>Calories: {{ nutrition.calories }}</p>
+    <p>Protein: {{ nutrition.protein }}g</p>
+    <p>Carbohydrates: {{ nutrition.carbs }}g</p>
+    <p>Fat: {{ nutrition.fat }}g</p>
+    <p>Cholesterol: {{ nutrition.cholesterol }}mg</p>
+    <p>Sodium: {{ nutrition.sodium }}mg</p>
+    <p>Sugar: {{ nutrition.sugar }}g</p>
+    <p>Potassium: {{ nutrition.potassium }}mg</p>
+    <!-- Add more fields as necessary -->
+
+    <a href="/" class="button">Back to Home</a>
+    <a href="/search" class="button">Search for another item</a>
+    <!-- Updated to lead to /view_food_log endpoint -->
+    <a href="/view_food_log" class="button">View My Food Log</a>
+</body>
+</html>

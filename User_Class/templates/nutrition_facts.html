@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nutrition Facts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .nutrition-facts {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        img {
+            max-width: 100px;
+            height: auto;
+        }
+        .input-choice {
+            margin-top: 20px;
+        }
+        .input-choice input[type="submit"] {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="nutrition-facts">
+        <h1>Nutrition Facts</h1>
+        {% if nutrition %}
+            <h2>{{ nutrition.food_name }}</h2>
+            <img src="{{ nutrition.photo }}" alt="Photo of {{ nutrition.food_name }}">
+            <p>Serving Size: {{ nutrition.serving_quantity }} {{ nutrition.serving_unit }}</p>
+            <p>Weight per Serving: {{ nutrition.serving_weight_grams }} grams</p>
+            <p>Calories: {{ nutrition.calories }}</p>
+            <p>Fat: {{ nutrition.fat }}g</p>
+            <p>Carbohydrates: {{ nutrition.carbs }}g</p>
+            <p>Protein: {{ nutrition.protein }}g</p>
+            <p>Cholesterol: {{ nutrition.cholesterol }}mg</p>
+            <p>Sodium: {{ nutrition.sodium }}mg</p>
+            <p>Sugars: {{ nutrition.sugars }}g</p>
+            <p>Potassium: {{ nutrition.potassium }}mg</p>
+            <p>Brand: {{ nutrition.brand }}</p>
+            <p>Date of Query: {{ nutrition.date }}</p>
+
+            <!-- Form to select input type (grams or servings) -->
+            <form action="/process_input_choice" method="post" class="input-choice">
+                <!-- Hidden inputs for each nutrition fact -->
+                <input type="hidden" name="food_name" value="{{ nutrition.food_name }}">
+                <input type="hidden" name="calories" value="{{ nutrition.calories }}">
+                <input type="hidden" name="fat" value="{{ nutrition.fat }}">
+                <input type="hidden" name="carbs" value="{{ nutrition.carbs }}">
+                <input type="hidden" name="protein" value="{{ nutrition.protein }}">
+                <input type="hidden" name="cholesterol" value="{{ nutrition.cholesterol }}">
+                <input type="hidden" name="sodium" value="{{ nutrition.sodium }}">
+                <input type="hidden" name="sugars" value="{{ nutrition.sugars }}">
+                <input type="hidden" name="potassium" value="{{ nutrition.potassium }}">
+                <input type="hidden" name="brand" value="{{ nutrition.brand }}">
+                <input type="hidden" name="date" value="{{ nutrition.date }}">
+                <input type="hidden" name="serving_size" value="{{ nutrition.serving_quantity }}">
+                <input type="hidden" name="serving_unit" value="{{ nutrition.serving_unit }}">
+                <input type="hidden" name="weight_per_serving" value="{{ nutrition.serving_weight_grams }}">
+                
+                <!-- Buttons for grams or servings -->
+                <label for="grams_input">Enter grams:</label>
+                <input type="number" id="grams_input" name="grams" min="0" placeholder="0">
+                <input type="submit" name="measurement_type" value="Grams">
+                
+                <!-- Input for number of servings -->
+                <label for="servings_input">Enter servings:</label>
+                <input type="number" id="servings_input" name="servings" min="0" placeholder="0">
+                <input type="submit" name="measurement_type" value="Servings">
+            </form>
+            
+        {% else %}
+            <p>No nutrition information available.</p>
+        {% endif %}
+    </div>
+    <a href="/">Back to Search</a>
+</body>
+</html>
