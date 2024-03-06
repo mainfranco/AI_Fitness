@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exercise Lookup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        .search-field {
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 16px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .submit-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Exercise Lookup</h1>
+        <form action="/search_exercises" method="post">
+            <input 
+                type="text" 
+                name="query" 
+                class="search-field" 
+                placeholder="Enter exercise name..." 
+                required
+            >
+            <input 
+                type="submit" 
+                value="Search" 
+                class="submit-btn"
+            >
+        </form>
+    </div>
+</body>
+</html>

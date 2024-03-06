@@ -55,7 +55,7 @@ def nutrition_info():
 def process_input_choice():
     measurement_type = request.form['measurement_type']
     food_name = request.form['food_name']
-    food_id = request.form.get('food_id', None)  # This might be used for linking to a specific food item, not shown here
+    food_id = request.form.get('food_id', None) 
     date = request.form.get('date')
     serving_size = request.form.get('serving_size')
     serving_unit = request.form.get('serving_unit')
@@ -69,33 +69,32 @@ def process_input_choice():
     weight_per_serving = float(weight_per_serving) if weight_per_serving else 1  # Avoid division by zero
 
     nutrition_dict = {
-        'calories': float(request.form.get('calories', '0')),
-        'protein': float(request.form.get('protein', '0')),
-        'carbs': float(request.form.get('carbs', '0')),
-        'fat': float(request.form.get('fat', '0')),
-        'cholesterol': float(request.form.get('cholesterol', '0')),
-        'sodium': float(request.form.get('sodium', '0')),
-        'sugar': float(request.form.get('sugars', '0')),
-        'potassium': float(request.form.get('potassium', '0'))
+        'calories': round(float(request.form.get('calories', '0')),2),
+        'protein': round(float(request.form.get('protein', '0')),2),
+        'carbs': round(float(request.form.get('carbs', '0')),2),
+        'fat': round(float(request.form.get('fat', '0')),2),
+        'cholesterol': round(float(request.form.get('cholesterol', '0')),2),
+        'sodium': round(float(request.form.get('sodium', '0')),2),
+        'sugar': round(float(request.form.get('sugars', '0')),2),
+        'potassium': round(float(request.form.get('potassium', '0')),2)
     }
 
     if measurement_type == 'Grams':
         servings = grams / weight_per_serving
     elif measurement_type == 'Servings':
-        # servings is directly used from the input
-        pass  # This pass can be removed, it's here just to show the elif structure explicitly
+
+        pass  
 
     # Adjust values in nutrition_dict based on servings
     for key in nutrition_dict.keys():
-        nutrition_dict[key] *= servings
+        nutrition_dict[key] = round(nutrition_dict[key] * servings, 2)
+
 
     nutrition_dict['food_name'] = food_name
     nutrition_dict['grams'] = grams
-    nutrition_dict['servings'] = servings
+    nutrition_dict['servings'] = round(servings,2)
 
-    user_id = 1  # Placeholder for the actual user ID logic
-
-    img_url = "placeholder_for_image_url"  # Placeholder for the actual image URL logic
+    img_url = "placeholder_for_image_url"  
 
     try:
         with sqlite3.connect('fitness_app.db') as conn:
@@ -113,10 +112,10 @@ def process_input_choice():
                 nutrition_dict['cholesterol'],
                 nutrition_dict['sodium'],
                 nutrition_dict['potassium'],
-                nutrition_dict['sugar'],  # Assuming your column names match these keys
+                nutrition_dict['sugar'], 
                 date,
-                img_url,  # Ensure this is the correct URL for the food's image
-                user.id  # Dynamically determined based on your app's user management
+                img_url,  
+                user.id  
             ))
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -127,7 +126,7 @@ def process_input_choice():
 
 @app.route('/view_food_log')
 def view_food_log():
-    user_id = 'current_user_id'  # This should be dynamically determined based on the logged-in user
+
     data = []
     with sqlite3.connect('fitness_app.db') as conn:
         cursor = conn.cursor()
@@ -137,6 +136,24 @@ def view_food_log():
     
     return render_template('food_log.html', food_log=data)
 
+
+@app.route('/search_exercises', methods=['GET', 'POST'])
+def exercise_options():
+    # If it's a POST request, we will process the form data
+    if request.method == 'POST':
+        # Extracting the 'query' from the form data
+        query = request.form.get('query')
+        
+        # Perform the search using the user's `search_exercise` method
+        # which should return the search results or handle the search internally
+        search_results = user.search_exercise(query)
+
+        # Render a template to display the search results
+        # You would need to create an HTML template that expects `search_results`
+        return render_template('exercise_results.html', search_results=search_results)
+
+    # If it's a GET request, just render the search form
+    return render_template('search_exercises.html')
 
 
 

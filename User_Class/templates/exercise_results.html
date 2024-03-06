@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exercise Search Results</title>
+    <style>
+        .results-list {
+            list-style: none;
+            padding: 0;
+        }
+        .results-list li {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .no-results {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <h1>Exercise Search Results</h1>
+    <ul class="results-list">
+        {% if search_results %}
+            {% for exercise in search_results %}
+                <li>{{ exercise }}</li>
+            {% endfor %}
+        {% else %}
+            <p class="no-results">No exercises found.</p>
+        {% endif %}
+    </ul>
+    <a href="/search_exercises">Back to Search</a>
+</body>
+</html>

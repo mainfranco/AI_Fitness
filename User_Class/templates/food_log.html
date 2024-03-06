@@ -3,42 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <title>Food Log</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .no-entries {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Your Food Log</h1>
     {% if food_log %}
         <table>
-            <tr>
-                <th>Food Name</th>
-                <th>Calories</th>
-                <th>Protein</th>
-                <th>Carbs</th>
-                <th>Fat</th>
-                <th>Cholesterol</th>
-                <th>Sodium</th>
-                <th>Potassium</th>
-                <th>Sugars</th>
-                <th>Date</th>
-                <!-- Add more columns as needed -->
-            </tr>
-            {% for entry in food_log %}
+            <thead>
                 <tr>
-                    <td>{{ entry[2] }}</td>
-                    <td>{{ entry[3] }}</td>
-                    <td>{{ entry[4] }}g</td>
-                    <td>{{ entry[5] }}g</td>
-                    <td>{{ entry[6] }}g</td>
-                    <td>{{ entry[7] }}mg</td>
-                    <td>{{ entry[8] }}mg</td>
-                    <td>{{ entry[9] }}mg</td>
-                    <td>{{ entry[10] }}g</td>
-                    <td>{{ entry[11] }}</td>
-                    <!-- Display other fields as needed -->
+                    <th>Food Name</th>
+                    <th>Calories</th>
+                    <th>Protein</th>
+                    <th>Carbs</th>
+                    <th>Fat</th>
+                    <th>Cholesterol</th>
+                    <th>Sodium</th>
+                    <th>Potassium</th>
+                    <th>Sugars</th>
+                    <th>Date</th>
+                    <!-- Add more columns as needed -->
                 </tr>
-            {% endfor %}
+            </thead>
+            <tbody>
+                {% for entry in food_log %}
+                    <tr>
+                        <td>{{ entry[2] }}</td>
+                        <td>{{ entry[3] }}</td>
+                        <td>{{ entry[4] }}g</td>
+                        <td>{{ entry[5] }}g</td>
+                        <td>{{ entry[6] }}g</td>
+                        <td>{{ entry[7] }}mg</td>
+                        <td>{{ entry[8] }}mg</td>
+                        <td>{{ entry[9] }}mg</td>
+                        <td>{{ entry[10] }}g</td>
+                        <td>{{ entry[11] }}</td>
+                        <!-- Display other fields as needed -->
+                    </tr>
+                {% endfor %}
+            </tbody>
         </table>
     {% else %}
-        <p>No entries found.</p>
+        <div class="no-entries">
+            <p>No entries found.</p>
+        </div>
     {% endif %}
 </body>
 </html>
