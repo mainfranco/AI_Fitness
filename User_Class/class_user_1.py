@@ -840,7 +840,7 @@ class User:
                         print(table[0])
                 else:
                     # Query the database for all entries in the specified table
-                    cursor.execute(f'SELECT * FROM {action} WHERE user_id = {self.id}')
+                    cursor.execute(f'SELECT * FROM {action} LIMIT 20')
 
                     # Fetch all rows from the query
                     rows = cursor.fetchall()

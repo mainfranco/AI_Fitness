@@ -187,6 +187,42 @@ class User_Flask:
             data.append(i['name'])
 
         return data
+    
+
+
+
+    def get_user_workouts(self):
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''SELECT workout_name, id 
+                              FROM predefined_workouts 
+                              WHERE user_id = ? ''', (self.id,))
+            
+            workout_names = cursor.fetchall()
+            workout_names = workout_names
+            return workout_names
+        
+
+
+    def get_workout_details(self):
+
+        data = self.get_user_workouts()
+        workout_ids = []
+        for i in data:
+            workout_ids.append(i[1])
+
+
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(''' SELECT exercise_name, sets, rep_range
+                               FROM workout_exercises
+                               WHERE workout_id = ?
+                           
+                           ''', (workout_ids))
+
+
+
+
         
 def log_exercise(self, exercise_name):
 

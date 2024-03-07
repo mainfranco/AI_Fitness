@@ -5,9 +5,11 @@ from Flask_User import User_Flask
 import sqlite3
 from datetime import datetime
 from datetime import date
+import re 
+
+user = User_Flask('Mark Infranco', 1)
 
 
-user = User_Flask('Mark', 2)
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///fitness_app.db"
 
@@ -235,6 +237,38 @@ def exercise_options():
 
     # If it's a GET request, just render the search form
     return render_template('search_exercises.html')
+
+
+
+@app.route('/my_workouts')
+def my_workouts():
+    if request.method == 'GET':
+        # Fetch the workouts for the current user
+        workouts = user.get_user_workouts()
+
+        # Clean workout names and convert to list of dictionaries
+        cleaned_workouts = [{'name': re.sub(r'[^a-zA-Z\s]', '', workout[0]), 'id': workout[1]} for workout in workouts]
+
+        return render_template('choose_workout.html', workouts=cleaned_workouts)
+
+@app.route('/my_workouts/<int:workout_id>')  # Use an integer converter for workout_id
+def exercise_choice(workout_id):
+    with sqlite3.connect(user.db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''SELECT exercise_name, sets, rep_range
+                          FROM workout_exercises
+                          WHERE workout_id = ?
+                       ''', (workout_id,))  # Make sure workout_id is passed as a tuple
+
+        exercises = cursor.fetchall()
+        print(exercises)  # For debugging
+
+    return render_template('selected_workout.html', workout_id=workout_id, exercises=exercises)
+
+
+
+
+
 
 
 

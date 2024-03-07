@@ -1,0 +1,18 @@
+<!-- selected_workout.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Workout Details</title>
+</head>
+<body>
+    <h1>Workout ID: {{ workout_id }}</h1>
+    <h2>Exercises:</h2>
+    <ul>
+        {% for exercise in exercises %}
+            <li>{{ exercise[0] }} - Sets: {{ exercise[1] }}, Rep Range: {{ exercise[2] }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
