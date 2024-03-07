@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Log Entry Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .confirmation {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .entry {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Food Log Entry Confirmation</h1>
+    <div class="confirmation">
+        <div class="entry">Food Name: <strong>{{food_name}}</strong></div>
+        <div class="entry">Calories: <strong>{{calories}}</strong></div>
+        <div class="entry">Protein: <strong>{{protein}}g</strong></div>
+        <div class="entry">Carbs: <strong>{{carbs}}g</strong></div>
+        <div class="entry">Fat: <strong>{{fat}}g</strong></div>
+        <div class="entry">Cholesterol: <strong>{{cholesterol}}mg</strong></div>
+        <div class="entry">Sodium: <strong>{{sodium}}mg</strong></div>
+        <div class="entry">Potassium: <strong>{{potassium}}mg</strong></div>
+        <div class="entry">Sugars: <strong>{{sugars}}g</strong></div>
+        <div class="entry">Entry Date: <strong>{{entry_date}}</strong></div>
+        <!-- Image and User ID can be displayed if needed -->
+    </div>
+</body>
+</html>

@@ -15,14 +15,23 @@
             height: 100vh;
             flex-direction: column;
         }
-        form {
+        form, .manual-entry-link {
             display: flex;
             flex-direction: column;
             width: 300px;
         }
-        input, button {
+        input, button, .manual-entry-link a {
             margin: 5px 0;
             padding: 10px;
+            text-align: center;
+            text-decoration: none;
+            color: black;
+            border: none;
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        .manual-entry-link a:hover {
+            background-color: #ddd;
         }
     </style>
 </head>
@@ -32,5 +41,9 @@
         <input type="text" name="food_search" placeholder="Enter a food item" required>
         <button type="submit">Search</button>
     </form>
+    <!-- Link styled as a button for manually entering food options -->
+    <div class="manual-entry-link">
+        <a href="/manual-entry">Add Food Manually</a>
+    </div>
 </body>
 </html>

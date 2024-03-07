@@ -70,7 +70,7 @@ def new_sql_tables():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id TEXT NOT NULL,
             date TEXT NOT NULL,
-            fitbit_request_token TEXT,
+            fitbit_request_token TEXT,   
             fitbit_code_verifier TEXT,
             fitbit_code_challenge TEXT,
             FOREIGN KEY(user_id) REFERENCES users(id)

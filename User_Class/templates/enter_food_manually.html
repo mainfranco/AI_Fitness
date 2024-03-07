@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Food Nutrition Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+        }
+        label {
+            margin-top: 10px;
+        }
+        input, button {
+            margin: 5px 0;
+            padding: 10px;
+        }
+        button {
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+        button:hover {
+            background-color: #1b5696;
+        }
+    </style>
+</head>
+<body>
+    <h1>Manually Enter Food Information</h1>
+    <form action="/manual-entry" method="post">
+        <label for="food_name">Food Name:</label>
+        <input type="text" id="food_name" name="food_name" placeholder="Enter food name" required>
+        
+        <label for="calories">Calories:</label>
+        <input type="number" id="calories" name="calories" placeholder="Calories" required>
+        
+        <label for="protein">Protein (g):</label>
+        <input type="number" id="protein" name="protein" placeholder="Protein in grams" required>
+        
+        <label for="carbs">Carbs (g):</label>
+        <input type="number" id="carbs" name="carbs" placeholder="Carbs in grams" required>
+        
+        <label for="fats">Fats (g):</label>
+        <input type="number" id="fats" name="fats" placeholder="Fats in grams" required>
+        
+        <button type="submit">Submit Nutrition Data</button>
+    </form>
+</body>
+</html>

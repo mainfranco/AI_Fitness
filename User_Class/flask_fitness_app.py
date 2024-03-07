@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from Flask_User import User_Flask
 import sqlite3
 from datetime import datetime
-
+from datetime import date
 
 
 user = User_Flask('Mark', 2)
@@ -30,6 +30,59 @@ def search():
         results = user.get_item_options(food_item)
         return render_template('results.html', results=results)
     return render_template('search_form.html')
+
+
+
+@app.route('/manual-entry', methods=['GET', 'POST'])
+def enter_food_manually():
+    from datetime import date
+    import sqlite3
+    from flask import request, render_template
+
+    today = date.today()
+    formatted_date = today.strftime("%Y-%m-%d")
+
+    if request.method == 'GET':
+        return render_template('enter_food_manually.html')
+
+    # Assuming `user.id` is defined elsewhere and is accessible
+    user_id = user.id
+
+    food_name = request.form.get('food_name')
+    calories = request.form.get('calories')
+    protein = request.form.get('protein')
+    carbs = request.form.get('carbs')
+    fat = request.form.get('fats')
+    cholesterol = 0  # or from form, if available
+    sodium = 0  # or from form, if available
+    potassium = 0  # or from form, if available
+    sugars = 0  # or from form, if available
+    img = "NA"  # or handle file upload
+
+    # Insert data into database
+    with sqlite3.connect('fitness_app.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute('''INSERT INTO food_log (food_name, calories, protein, carbs, fat, cholesterol, sodium, potassium, sugars, entry_date, img, user_id) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (food_name, calories, protein, carbs, fat, cholesterol, sodium, potassium, sugars, formatted_date, img, user_id))
+
+    # Pass the entered values to the template
+    return render_template('manual_food_log_result.html', 
+                           food_name=food_name, 
+                           calories=calories, 
+                           protein=protein, 
+                           carbs=carbs, 
+                           fat=fat, 
+                           cholesterol=cholesterol, 
+                           sodium=sodium, 
+                           potassium=potassium, 
+                           sugars=sugars, 
+                           entry_date=formatted_date, 
+                           img=img, 
+                           user_id=user_id)
+
+
+
 
 
 @app.route('/get_nutrition', methods=['POST'])
@@ -136,7 +189,7 @@ import sqlite3
 @app.route('/view_food_log', methods=['GET', 'POST'])
 def view_food_log():
     # Default or user-specified entry date
-    entry_date = request.form.get('date', '2024-03-06')  # Providing a fallback default date
+    entry_date = request.form.get('date') 
 
     totals = {'calories': 0, 'protein': 0, 'carbs': 0, 'fat': 0, 
               'cholesterol': 0, 'sodium': 0, 'potassium': 0, 'sugars': 0}
@@ -148,8 +201,6 @@ def view_food_log():
             cursor.execute(query, (user.id, entry_date))
             data = cursor.fetchall()
 
-            # Assuming the indexes start from 1 for food name, and nutrients start from index 3 to 10
-            # Adjust the indices based on your actual data structure
             for entry in data:
                 totals['calories'] += entry[3]
                 totals['protein'] += entry[4]
@@ -159,6 +210,9 @@ def view_food_log():
                 totals['sodium'] += entry[8]
                 totals['potassium'] += entry[9]
                 totals['sugars'] += entry[10]
+
+            for i in totals.keys():
+                totals[i] = round(totals[i],2)
 
     else:  # If it's a GET request
         data = []  # Ensure data is defined even if it's empty
