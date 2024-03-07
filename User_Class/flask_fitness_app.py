@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from Flask_User import User_Flask
 import sqlite3
+from datetime import datetime
 
 
 
@@ -56,7 +57,12 @@ def process_input_choice():
     measurement_type = request.form['measurement_type']
     food_name = request.form['food_name']
     food_id = request.form.get('food_id', None) 
+
     date = request.form.get('date')
+    print(date)
+    date_obj = datetime.strptime(date, '%Y-%m-%d %H:%M:%S.%f')
+    date_formatted = date_obj.strftime('%Y-%m-%d')
+
     serving_size = request.form.get('serving_size')
     serving_unit = request.form.get('serving_unit')
     weight_per_serving = request.form.get('weight_per_serving', '0')
@@ -113,7 +119,7 @@ def process_input_choice():
                 nutrition_dict['sodium'],
                 nutrition_dict['potassium'],
                 nutrition_dict['sugar'], 
-                date,
+                date_formatted,
                 img_url,  
                 user.id  
             ))
@@ -124,17 +130,42 @@ def process_input_choice():
     return render_template('final_food_log.html', nutrition=nutrition_dict)
 
 
-@app.route('/view_food_log')
-def view_food_log():
+from flask import request, render_template
+import sqlite3
 
-    data = []
-    with sqlite3.connect('fitness_app.db') as conn:
-        cursor = conn.cursor()
-        query = "SELECT * FROM food_log WHERE user_id = ?"
-        cursor.execute(query, (user.id,))
-        data = cursor.fetchall()
-    
-    return render_template('food_log.html', food_log=data)
+@app.route('/view_food_log', methods=['GET', 'POST'])
+def view_food_log():
+    # Default or user-specified entry date
+    entry_date = request.form.get('date', '2024-03-06')  # Providing a fallback default date
+
+    totals = {'calories': 0, 'protein': 0, 'carbs': 0, 'fat': 0, 
+              'cholesterol': 0, 'sodium': 0, 'potassium': 0, 'sugars': 0}
+
+    if request.method == 'POST':
+        with sqlite3.connect('fitness_app.db') as conn:
+            cursor = conn.cursor()
+            query = "SELECT * FROM food_log WHERE user_id = ? AND entry_date = ?"
+            cursor.execute(query, (user.id, entry_date))
+            data = cursor.fetchall()
+
+            # Assuming the indexes start from 1 for food name, and nutrients start from index 3 to 10
+            # Adjust the indices based on your actual data structure
+            for entry in data:
+                totals['calories'] += entry[3]
+                totals['protein'] += entry[4]
+                totals['carbs'] += entry[5]
+                totals['fat'] += entry[6]
+                totals['cholesterol'] += entry[7]
+                totals['sodium'] += entry[8]
+                totals['potassium'] += entry[9]
+                totals['sugars'] += entry[10]
+
+    else:  # If it's a GET request
+        data = []  # Ensure data is defined even if it's empty
+
+    # Include totals in the template rendering
+    return render_template('food_log.html', food_log=data, totals=totals, selected_date=entry_date)
+
 
 
 @app.route('/search_exercises', methods=['GET', 'POST'])
@@ -144,12 +175,8 @@ def exercise_options():
         # Extracting the 'query' from the form data
         query = request.form.get('query')
         
-        # Perform the search using the user's `search_exercise` method
-        # which should return the search results or handle the search internally
         search_results = user.search_exercise(query)
 
-        # Render a template to display the search results
-        # You would need to create an HTML template that expects `search_results`
         return render_template('exercise_results.html', search_results=search_results)
 
     # If it's a GET request, just render the search form
@@ -157,8 +184,70 @@ def exercise_options():
 
 
 
+@app.route('/log_exercise', methods=['GET', 'POST'])
+def log_exercises():
+    return render_template('log_exercises.html')
 
 
+
+
+@app.route('/logs', methods=['GET', 'POST'])
+def choose_log():
+    return render_template('choose_log.html')
+
+
+
+
+@app.route('/exercise_logs', methods=['GET', 'POST'])
+def view_exercise_log():
+    selected_date = None
+    data = []  # Initialize data as empty, suitable for a GET request
+
+    if request.method == 'POST':
+        # User submitted the form, so fetch the selected date
+        selected_date = request.form.get('date')  # Use .get() for safer access
+
+        if selected_date:  # Only query the database if a date is set
+            with sqlite3.connect('fitness_app.db') as conn:
+                cursor = conn.cursor()
+                query = '''SELECT e.exercise_name, es.reps, es.weight, COUNT(es.id) as sets
+                            FROM exercises e
+                            JOIN exercise_sets es ON e.id = es.exercise_id
+                            WHERE e.user_id = ?  
+                            AND e.date = ?  
+                            GROUP BY es.exercise_id, es.weight, es.reps'''
+
+                cursor.execute(query, (user.id, selected_date))
+                data = cursor.fetchall()
+
+    # For a GET request or a POST request without a date, this will render the page without exercise data
+    # For a POST request with a date, it will render the page with the queried data
+    return render_template('workout_log.html', date=selected_date, exercises=data)
+
+
+@app.route('/sleep_logs', methods=['GET', 'POST'])
+def view_sleep_log():
+
+    selected_date = None
+    data = []  # Initialize data as empty, suitable for a GET request
+
+    if request.method == 'POST':
+        # User submitted the form, so fetch the selected date
+        selected_date = request.form.get('date')  # Use .get() for safer access
+
+        if selected_date:  # Only query the database if a date is set
+            with sqlite3.connect('fitness_app.db') as conn:
+                cursor = conn.cursor()
+                query = '''SELECT efficiency, start_time, end_time, time_in_bed, minutes_asleep, minutesToFallAsleep, minutes_awake
+                            FROM sleep_data
+                            WHERE user_id = ?  
+                            AND date = ?  
+                            '''
+
+                cursor.execute(query, (user.id, selected_date))
+                data = cursor.fetchall()
+
+    return render_template('sleep_log.html', sleep_logs =data)
 
 
 if __name__ == '__main__':

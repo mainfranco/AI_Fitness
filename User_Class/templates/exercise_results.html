@@ -13,9 +13,26 @@
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .no-results {
             color: #999;
+        }
+        .submit-btn {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+        form {
+            margin: 0;
         }
     </style>
 </head>
@@ -24,7 +41,13 @@
     <ul class="results-list">
         {% if search_results %}
             {% for exercise in search_results %}
-                <li>{{ exercise }}</li>
+                <li>
+                    <form action="/log_exercise" method="post">
+                        <input type="hidden" name="exercise_name" value="{{ exercise }}">
+                        <span>{{ exercise }}</span>
+                        <button type="submit" class="submit-btn">Choose</button>
+                    </form>
+                </li>
             {% endfor %}
         {% else %}
             <p class="no-results">No exercises found.</p>

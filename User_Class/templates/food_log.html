@@ -38,10 +38,21 @@
             text-align: center;
             margin-top: 20px;
         }
+        .date-picker-form {
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>Your Food Log</h1>
+    <!-- Date picker form -->
+    <div class="date-picker-form">
+        <form action="/view_food_log" method="post">
+            <input type="date" id="date" name="date" required>
+            <input type="submit" value="Choose Date">
+        </form>
+    </div>
     {% if food_log %}
         <table>
             <thead>
@@ -76,6 +87,21 @@
                     </tr>
                 {% endfor %}
             </tbody>
+            <tfoot>
+                <tr>
+                    <th>Total</th>
+                    <th>{{ totals.calories }} Calories</th>
+                    <th>{{ totals.protein }}g Protein</th>
+                    <th>{{ totals.carbs }}g Carbs</th>
+                    <th>{{ totals.fat }}g Fat</th>
+                    <th>{{ totals.cholesterol }}mg Cholesterol</th>
+                    <th>{{ totals.sodium }}mg Sodium</th>
+                    <th>{{ totals.potassium }}mg Potassium</th>
+                    <th>{{ totals.sugars }}g Sugars</th>
+                    <th></th> <!-- Empty for alignment with the Date column -->
+                </tr>
+            </tfoot>
+            
         </table>
     {% else %}
         <div class="no-entries">

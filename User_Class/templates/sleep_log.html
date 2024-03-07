@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sleep Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sleep Data</h1>
+        <form action="/sleep_logs" method="post">
+            <label for="date">Choose a date:</label>
+            <input type="date" id="date" name="date" required>
+            <input type="submit" value="Submit">
+        </form>
+        <table>
+            <thead>
+                <tr>
+                    <th>Efficiency</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Time in Bed</th>
+                    <th>Minutes Asleep</th>
+                    <th>Minutes to Fall Asleep</th>
+                    <th>Minutes Awake</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in sleep_logs %}
+                <tr>
+                    <td>98</td>
+                    <td>23:00</td>
+                    <td>07:00</td>
+                    <td>8 hours</td>
+                    <td>7 hours 45 mins</td>
+                    <td>30 minutes</td>
+                    <td>35 minutes</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
