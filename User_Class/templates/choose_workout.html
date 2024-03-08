@@ -12,30 +12,39 @@
             align-items: center;
             background-color: #f4f4f4;
         }
-        .workout-form {
-            margin: 10px;
-        }
-        .workout-button {
-            padding: 10px 20px;
-            font-size: 16px;
+        a.workout-button {
+            display: inline-block; /* Align buttons horizontally */
+            margin: 15px; /* Increase spacing between buttons */
+            padding: 15px 25px; /* Increase padding for a larger button */
+            font-size: 18px; /* Increase font size for better readability */
             border: none;
-            border-radius: 5px;
+            border-radius: 8px; /* Slightly more rounded corners */
             background-color: #007bff;
             color: white;
             cursor: pointer;
             text-decoration: none;
-            transition: background-color 0.3s ease;
+            transition: transform 0.2s ease, background-color 0.3s ease;
         }
-        .workout-button:hover {
+        a.workout-button:hover {
             background-color: #0056b3;
+            transform: scale(1.05); /* Slightly enlarge buttons on hover */
+        }
+        .workout-container {
+            display: flex;
+            flex-direction: column; /* Stack buttons vertically */
+            align-items: center;
+            max-width: 600px; /* Set a max width for the button container */
+            width: 100%; /* Full width */
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <h1>Choose Your Workout</h1>
-
-    {% for workout in workouts %}
-    <a href="/my_workouts/{{ workout.id }}" class="workout-button">{{ workout.name }}</a>
-    {% endfor %}
+    <div class="workout-container">
+        {% for workout in workouts %}
+            <a href="/my_workouts/{{ workout.id }}" class="workout-button">{{ workout.name }}</a>
+        {% endfor %}
+    </div>
 </body>
 </html>

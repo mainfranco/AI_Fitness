@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Track Your Workout</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f7f7;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #444;
+            text-align: center;
+        }
+        h2 {
+            background-color: #f2f2f2;
+            padding: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #008cba;
+        }
+        .set {
+            background-color: #fff;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            width: 100px;
+        }
+        .submit-button {
+            background-color: #008cba;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .submit-button:hover {
+            background-color: #005f73;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Track Your Workout</h1>
+        <form action="/submit_workout" method="post">
+            {% for exercise, details in exercise_tracking.items() %}
+                <h2>{{ exercise }} - Rep Range: {{ details.rep_range }}</h2>
+                {% for set_data in details.sets_data %}
+                    <div class="set">
+                        <label for="exercise{{ details.exercise_id }}_set{{ set_data.set_number }}_weight">Set {{ set_data.set_number }} - Weight:</label>
+                        <input type="number" id="exercise{{ details.exercise_id }}_set{{ set_data.set_number }}_weight" name="exercise{{ details.exercise_id }}_set{{ set_data.set_number }}_weight">
+
+                        <label for="exercise{{ details.exercise_id }}_set{{ set_data.set_number }}_reps">Reps:</label>
+                        <input type="number" id="exercise{{ details.exercise_id }}_set{{ set_data.set_number }}_reps" name="exercise{{ details.exercise_id }}_set{{ set_data.set_number }}_reps" min="0">
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            <input type="hidden" name="workout_id" value="{{ workout_id }}">
+            <button type="submit" class="submit-button">Submit Workout</button>
+        </form>
+    </div>
+</body>
+</html>

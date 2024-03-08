@@ -821,7 +821,7 @@ class User:
     # PULLING DATA
 
 
-    def pull_data(self):
+    def pull_data(self, limit = 100):
         while True:
             action = input("Enter 'l' to show all tables, a table name to query it, or 'e' to quit: ").strip()
             if action.lower() == 'e':  # Allow the user to exit
@@ -840,7 +840,7 @@ class User:
                         print(table[0])
                 else:
                     # Query the database for all entries in the specified table
-                    cursor.execute(f'SELECT * FROM {action} LIMIT 20')
+                    cursor.execute(f'SELECT * FROM {action} LIMIT {limit}')
 
                     # Fetch all rows from the query
                     rows = cursor.fetchall()

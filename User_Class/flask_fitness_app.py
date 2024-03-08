@@ -6,6 +6,8 @@ import sqlite3
 from datetime import datetime
 from datetime import date
 import re 
+import json
+
 
 user = User_Flask('Mark Infranco', 1)
 
@@ -251,19 +253,97 @@ def my_workouts():
 
         return render_template('choose_workout.html', workouts=cleaned_workouts)
 
+
+
 @app.route('/my_workouts/<int:workout_id>')  # Use an integer converter for workout_id
 def exercise_choice(workout_id):
+    print('This is the first workout id', workout_id)
     with sqlite3.connect(user.db_path) as conn:
         cursor = conn.cursor()
         cursor.execute('''SELECT exercise_name, sets, rep_range
                           FROM workout_exercises
                           WHERE workout_id = ?
-                       ''', (workout_id,))  # Make sure workout_id is passed as a tuple
+                       ''', (workout_id,)) 
 
         exercises = cursor.fetchall()
-        print(exercises)  # For debugging
+
 
     return render_template('selected_workout.html', workout_id=workout_id, exercises=exercises)
+
+
+@app.route('/start_tracking', methods=['POST'])
+def start_tracking():
+    workout_id = request.form.get('workout_id')
+    print(workout_id)
+    # Assuming you've set up a database connection somewhere
+    conn = sqlite3.connect('fitness_app.db')
+    cur = conn.cursor()
+    
+    cur.execute("SELECT id, exercise_name, sets, rep_range FROM workout_exercises WHERE workout_id = ?", (workout_id,))
+    exercises = cur.fetchall()
+    print(exercises)
+
+    exercise_tracking = {}
+    for exercise_id, name, sets, rep_range in exercises:
+        exercise_tracking[name] = {
+            'exercise_id': exercise_id,
+            'sets': sets,
+            'rep_range': rep_range,
+            'sets_data': [{'set_number': i + 1, 'weight': '', 'reps': ''} for i in range(sets)]
+        }
+
+    return render_template('tracking_workouts.html', exercise_tracking=exercise_tracking)
+
+
+@app.route('/submit_workout', methods=['POST'])
+def submit_workout():
+  
+    # Iterate through the form data
+    for key, value in request.form.items():
+
+        # Check if the current form input is for 'weight' and has a value
+        if 'weight' in key and value:
+            parts = key.split('_')
+            # Assuming the format of the key is 'exercise<exercise_id>_set<set_number>_weight'
+            exercise_id = int(parts[0].replace('exercise', ''))
+            set_number = int(parts[1].replace('set', ''))
+            
+            # Construct the key for the 'reps' using the same 'exercise_id' and 'set_number'
+            reps_key = f'exercise{exercise_id}_set{set_number}_reps'
+            reps = request.form.get(reps_key)
+            
+            weight_key = f'exercise{exercise_id}_set{set_number}_weight'
+            weight = request.form.get(weight_key)
+            
+
+            print('exercise id', exercise_id)
+            print('set number', set_number)
+            print('weight', weight)
+            print('reps', reps)
+            # Only proceed if both 'reps' and 'weight' are provided
+            if reps and weight:
+                print('Triggered succesfully')
+                # Insert the data into the 'exercise_sets' table
+                try:
+                    with sqlite3.connect('fitness_app.db') as conn:
+                        cursor = conn.cursor()
+                        cursor.execute('''
+                            INSERT INTO exercise_sets (exercise_id, set_number, weight, reps) 
+                            VALUES (?, ?, ?, ?)
+                        ''', (exercise_id, set_number, float(weight), int(reps)))
+                         
+                        print('SQL insert was triggered')
+                except sqlite3.Error as e:
+                    print(f"An error occurred: {e}")
+                    # Handle the error, such as returning an error message to the user
+                    return "An error occurred during database insertion."
+
+    # Commit the changes and close the connection
+    conn.commit()
+    conn.close()
+    
+    # After successful insertion, redirect to a confirmation page
+    return render_template('display_workout_log.html')
 
 
 
