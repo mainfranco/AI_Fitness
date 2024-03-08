@@ -273,6 +273,10 @@ def exercise_choice(workout_id):
 
 @app.route('/start_tracking', methods=['POST'])
 def start_tracking():
+
+    now = datetime.now()
+    today_date = now.strftime("%Y-%m-%d")
+
     workout_id = request.form.get('workout_id')
     print(workout_id)
     # Assuming you've set up a database connection somewhere
@@ -292,11 +296,13 @@ def start_tracking():
             'sets_data': [{'set_number': i + 1, 'weight': '', 'reps': ''} for i in range(sets)]
         }
 
-    return render_template('tracking_workouts.html', exercise_tracking=exercise_tracking)
+    return render_template('tracking_workouts.html', exercise_tracking=exercise_tracking, today_date = today_date)
 
 
 @app.route('/submit_workout', methods=['POST'])
 def submit_workout():
+
+    today_date = request.form.get('workout_date')
   
     # Iterate through the form data
     for key, value in request.form.items():
@@ -328,9 +334,9 @@ def submit_workout():
                     with sqlite3.connect('fitness_app.db') as conn:
                         cursor = conn.cursor()
                         cursor.execute('''
-                            INSERT INTO exercise_sets (exercise_id, set_number, weight, reps) 
-                            VALUES (?, ?, ?, ?)
-                        ''', (exercise_id, set_number, float(weight), int(reps)))
+                            INSERT INTO exercise_sets (exercise_id, set_number, weight, reps, date_performed) 
+                            VALUES (?, ?, ?, ?, ?)
+                        ''', (exercise_id, set_number, float(weight), int(reps), today_date))
                          
                         print('SQL insert was triggered')
                 except sqlite3.Error as e:
@@ -369,28 +375,29 @@ def choose_log():
 @app.route('/exercise_logs', methods=['GET', 'POST'])
 def view_exercise_log():
     selected_date = None
-    data = []  # Initialize data as empty, suitable for a GET request
+    data = [] 
 
     if request.method == 'POST':
         # User submitted the form, so fetch the selected date
         selected_date = request.form.get('date')  # Use .get() for safer access
-
+        print(selected_date)
         if selected_date:  # Only query the database if a date is set
             with sqlite3.connect('fitness_app.db') as conn:
                 cursor = conn.cursor()
-                query = '''SELECT e.exercise_name, es.reps, es.weight, COUNT(es.id) as sets
-                            FROM exercises e
+                query = '''SELECT e.exercise_name, es.set_number, es.reps, es.weight
+                            FROM workout_exercises e
                             JOIN exercise_sets es ON e.id = es.exercise_id
-                            WHERE e.user_id = ?  
-                            AND e.date = ?  
+                            WHERE es.exercise_id = e.id
+                            AND es.date_performed = ?  
                             GROUP BY es.exercise_id, es.weight, es.reps'''
 
-                cursor.execute(query, (user.id, selected_date))
+                cursor.execute(query, (selected_date,))
                 data = cursor.fetchall()
+                print(data)
 
     # For a GET request or a POST request without a date, this will render the page without exercise data
     # For a POST request with a date, it will render the page with the queried data
-    return render_template('workout_log.html', date=selected_date, exercises=data)
+    return render_template('workout_log.html', date=selected_date, data=data)
 
 
 @app.route('/sleep_logs', methods=['GET', 'POST'])

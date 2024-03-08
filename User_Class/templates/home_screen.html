@@ -6,48 +6,60 @@
     <title>Food & Fitness Tracker</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background-color: #f4f4f4;
+            background: url('https://images.unsplash.com/photo-1494597564530-871f2b93ac55?q=80&w=1413&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            background-size: cover;
         }
         .header {
             text-align: center;
-            padding: 20px 0;
+            padding: 50px 20px;
+            background: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #007BFF;
         }
         .button {
             display: inline-block;
             background-color: #007BFF;
             color: white;
-            padding: 10px 20px;
-            margin: 10px 5px;
+            padding: 15px 25px;
+            margin: 10px;
             text-decoration: none;
-            font-size: 16px;
+            font-size: 18px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, background-color 0.2s;
         }
         .button:hover {
             background-color: #0056b3;
+            transform: scale(1.05);
         }
         .container {
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            margin: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Food & Fitness Tracker</h1>
-        <!-- Optionally, add a more relevant image or remove the image entirely -->
-        <!-- <img src="URL_TO_NEW_IMAGE" alt="Relevant Image" style="max-width: 100%; height: auto;"> -->
     </div>
     
     <div class="container">
         <a href="/search" class="button">Log Food</a>
         <a href="/search_exercises" class="button">Track Exercise</a>
-        <!-- Updated "Logs" button to link to the /view_food_log endpoint -->
         <a href="/logs" class="button">Logs</a>
     </div>
 </body>

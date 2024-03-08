@@ -69,6 +69,12 @@
     <div class="container">
         <h1>Track Your Workout</h1>
         <form action="/submit_workout" method="post">
+            <!-- Date selection for the workout -->
+            <div class="set">
+                <label for="workout_date">Workout Date:</label>
+                <input type="date" id="workout_date" name="workout_date" value="{{ today_date }}">
+            </div>
+
             {% for exercise, details in exercise_tracking.items() %}
                 <h2>{{ exercise }} - Rep Range: {{ details.rep_range }}</h2>
                 {% for set_data in details.sets_data %}

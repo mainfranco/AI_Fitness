@@ -38,8 +38,11 @@
             margin: 20px auto;
             text-align: center;
         }
-        input[type="date"] {
+        input[type="date"], input[type="submit"] {
+            padding: 8px;
             margin: 0 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -53,17 +56,19 @@
     <table>
         <thead>
             <tr>
-                <th>Exercise</th>
+                <th>Exercise Name</th>
+                <th>Set Number</th>
                 <th>Reps</th>
                 <th>Weight</th>
             </tr>
         </thead>
         <tbody>
-            {% for exercise in exercises %}
+            {% for record in data %}
             <tr>
-                <td>{{ exercise[0] }}</td>
-                <td>{{ exercise[1] }}</td>
-                <td>{{ exercise[2] }}</td>
+                <td>{{ record[0] }}</td>
+                <td>Set {{ record[1] }}</td>
+                <td>{{ record[2] }}</td>
+                <td>{{ record[3] }} lbs</td>
             </tr>
             {% endfor %}
         </tbody>

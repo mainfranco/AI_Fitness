@@ -61,9 +61,9 @@ def new_sql_tables():
             set_number INTEGER,  -- To identify the set number within an exercise
             weight DECIMAL,
             reps INTEGER,
+            date_performed TEXT,  -- Adding a column to store the date
             FOREIGN KEY(exercise_id) REFERENCES workout_exercises(id)
-        )
-        '''
+        )'''
 
 
 
