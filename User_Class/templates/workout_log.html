@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Exercise Log</title>
+    <!-- Styles remain unchanged -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -53,25 +54,28 @@
         <input type="date" id="date" name="date" required>
         <input type="submit" value="Submit">
     </form>
+    {% for exercise, sets in data.items() %}
+    <h2>{{ exercise }}</h2>
     <table>
         <thead>
             <tr>
-                <th>Exercise Name</th>
                 <th>Set Number</th>
                 <th>Reps</th>
-                <th>Weight</th>
+                <th>Weight (lbs)</th>
             </tr>
         </thead>
         <tbody>
-            {% for record in data %}
-            <tr>
-                <td>{{ record[0] }}</td>
-                <td>Set {{ record[1] }}</td>
-                <td>{{ record[2] }}</td>
-                <td>{{ record[3] }} lbs</td>
-            </tr>
+            {% for set_dict in sets %}
+                {% for set_num, values in set_dict.items() %}
+                    <tr>
+                        <td>{{ set_num }}</td>
+                        <td>{{ values[1] }}</td>
+                        <td>{{ values[0] }} lbs</td>
+                    </tr>
+                {% endfor %}
             {% endfor %}
         </tbody>
     </table>
+    {% endfor %}
 </body>
 </html>

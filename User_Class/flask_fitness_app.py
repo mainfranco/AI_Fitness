@@ -376,28 +376,33 @@ def choose_log():
 def view_exercise_log():
     selected_date = None
     data = [] 
+    exercises_entry = {}  # Initialize here to ensure it's always defined
 
     if request.method == 'POST':
-        # User submitted the form, so fetch the selected date
-        selected_date = request.form.get('date')  # Use .get() for safer access
-        print(selected_date)
-        if selected_date:  # Only query the database if a date is set
+        selected_date = request.form.get('date')
+        if selected_date:
             with sqlite3.connect('fitness_app.db') as conn:
                 cursor = conn.cursor()
                 query = '''SELECT e.exercise_name, es.set_number, es.reps, es.weight
-                            FROM workout_exercises e
-                            JOIN exercise_sets es ON e.id = es.exercise_id
-                            WHERE es.exercise_id = e.id
-                            AND es.date_performed = ?  
-                            GROUP BY es.exercise_id, es.weight, es.reps'''
-
+                           FROM workout_exercises e
+                           JOIN exercise_sets es ON e.id = es.exercise_id
+                           WHERE es.date_performed = ?  
+                           GROUP BY es.exercise_id, es.weight, es.reps'''
                 cursor.execute(query, (selected_date,))
                 data = cursor.fetchall()
-                print(data)
 
-    # For a GET request or a POST request without a date, this will render the page without exercise data
-    # For a POST request with a date, it will render the page with the queried data
-    return render_template('workout_log.html', date=selected_date, data=data)
+                for i in data:
+                    exercise_name, set_num, reps, weight = i  # Simplified assignment
+                    weight_rep_dict = {f'set_{set_num}': [weight, reps]}
+
+                    if exercise_name not in exercises_entry:
+                        exercises_entry[exercise_name] = [weight_rep_dict]
+                    else:
+                        exercises_entry[exercise_name].append(weight_rep_dict)
+
+                print(exercises_entry)
+    return render_template('workout_log.html', date=selected_date, data=exercises_entry)
+
 
 
 @app.route('/sleep_logs', methods=['GET', 'POST'])
