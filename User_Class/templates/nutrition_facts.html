@@ -73,14 +73,17 @@
                 
                 <!-- Input for number of servings -->
                 <label for="servings_input">Enter servings:</label>
-                <input type="number" id="servings_input" name="servings" min="0" placeholder="0">
+                <input type="text" id="servings_input" name="servings" min="0" step="any" placeholder="0">
                 <input type="submit" name="measurement_type" value="Servings">
-            </form>
+                </form>
             
         {% else %}
             <p>No nutrition information available.</p>
         {% endif %}
     </div>
-    <a href="/">Back to Search</a>
+    <a href="/">Back to Home Screen</a>
+    <div class="home-button">
+        <a href="/search">Search Foods</a>
+    </div>
 </body>
 </html>

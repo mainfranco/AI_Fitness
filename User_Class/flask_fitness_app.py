@@ -7,6 +7,8 @@ from datetime import datetime
 from datetime import date
 import re 
 import json
+from openai import OpenAI
+import os
 
 
 user = User_Flask('Mark Infranco', 1)
@@ -37,11 +39,91 @@ def search():
 
 
 
+import base64
+from flask import request, jsonify
+from openai import OpenAI
+
+@app.route('/upload-image', methods=['GET', 'POST'])
+def process_food_image():
+    if 'image' in request.files:
+        img = request.files['image']
+        img_path = 'temp_img.jpg'
+        img.save(img_path)
+
+        with open(img_path, 'rb') as file:
+            img_data = file.read()
+
+        # Encode the image data as base64
+        img_base64 = base64.b64encode(img_data).decode('utf-8')
+
+        client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+        response = client.chat.completions.create(
+            model="gpt-4-vision-preview",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Give an estimate of the entire nutrition facts of this food. The format of your response must be the following. food_name: '', total_calories: '', total_protein: '', total_carbs: '', total_fats:''. Please provide one number for each entry in calories, proteins etc and dont include ranges. Only one singular numeric value without any g attached the end. Ex. 'calories': 150 "
+                        },
+                        {
+                            "type": "image",
+                            "image": img_base64,
+                        },
+                    ],
+                }
+            ],
+            max_tokens=1000,
+        )
+
+        response_data = {
+            'content': response.choices[0].message.content,
+            'finish_reason': response.choices[0].finish_reason,
+            'index': response.choices[0].index
+        }
+        
+        food_data = user.format_food_img_data(response_data)
+        food_name = food_data['food_name']
+        calories = food_data['total_calories']
+        protein = food_data['total_protein']
+        carbs = food_data['total_carbs']
+        fat = food_data['total_fats']
+        cholesterol = 0
+        sodium = 0
+        potassium = 0
+        sugars = 0
+        today = date.today()
+        formatted_date = today.strftime("%Y-%m-%d")
+        user_id = user.id
+
+        with sqlite3.connect('fitness_app.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute('''INSERT INTO food_log (food_name, calories, protein, carbs, fat, cholesterol, sodium, potassium, sugars, entry_date, img, user_id) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (food_name, calories, protein, carbs, fat, cholesterol, sodium, potassium, sugars, formatted_date, 'No Image', user_id))
+
+        return render_template('manual_food_log_result.html', 
+                        food_name=food_name, 
+                        calories=calories, 
+                        protein=protein, 
+                        carbs=carbs, 
+                        fat=fat, 
+                        cholesterol=cholesterol, 
+                        sodium=sodium, 
+                        potassium=potassium, 
+                        sugars=sugars, 
+                        entry_date=formatted_date, 
+                        img=img, 
+                        user_id=user_id)
+    else:
+        return 'No image found in the request'
+
+
+
+
 @app.route('/manual-entry', methods=['GET', 'POST'])
 def enter_food_manually():
-    from datetime import date
-    import sqlite3
-    from flask import request, render_template
 
     today = date.today()
     formatted_date = today.strftime("%Y-%m-%d")
@@ -145,7 +227,7 @@ def process_input_choice():
     if measurement_type == 'Grams':
         servings = grams / weight_per_serving
     elif measurement_type == 'Servings':
-
+        print(servings)
         pass  
 
     # Adjust values in nutrition_dict based on servings

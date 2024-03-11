@@ -1,49 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Food Items</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-        }
-        form, .manual-entry-link {
-            display: flex;
-            flex-direction: column;
-            width: 300px;
-        }
-        input, button, .manual-entry-link a {
-            margin: 5px 0;
-            padding: 10px;
-            text-align: center;
-            text-decoration: none;
-            color: black;
-            border: none;
-            background-color: #f0f0f0;
-            cursor: pointer;
-        }
-        .manual-entry-link a:hover {
-            background-color: #ddd;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Food Items</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    form, .manual-entry-link, .take-picture-link {
+      display: flex;
+      flex-direction: column;
+      width: 300px;
+      margin-bottom: 20px;
+    }
+
+    input, button, .manual-entry-link a, .take-picture-link label {
+      margin: 5px 0;
+      padding: 10px;
+      text-align: center;
+      text-decoration: none;
+      color: black;
+      border: none;
+      background-color: #f0f0f0;
+      cursor: pointer;
+    }
+
+    .manual-entry-link a:hover, .take-picture-link label:hover {
+      background-color: #ddd;
+    }
+
+    .home-button {
+      margin-top: 20px;
+    }
+
+    #capture {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <h1>Search for Food Items</h1>
-    <form action="/search" method="post">
-        <input type="text" name="food_search" placeholder="Enter a food item" required>
-        <button type="submit">Search</button>
-    </form>
-    <!-- Link styled as a button for manually entering food options -->
-    <div class="manual-entry-link">
-        <a href="/manual-entry">Add Food Manually</a>
+  <h1>Search for Food Items</h1>
+  <form action="/search" method="post">
+    <input type="text" name="food_search" placeholder="Enter a food item" required>
+    <button type="submit">Search</button>
+  </form>
+
+  <!-- Link styled as a button for manually entering food options -->
+  <div class="manual-entry-link">
+    <a href="/manual-entry">Add Food Manually</a>
+  </div>
+
+  <!-- Link for taking a picture of food -->
+  <form action="/upload-image" method="post" enctype="multipart/form-data">
+    <div class="take-picture-link">
+      <label for="capture">Take Food Picture</label>
+      <input type="file" id="capture" name="image" accept="image/*" capture="environment">
     </div>
+    <button type="submit">Upload Picture</button>
+  </form>
+
+  <div class="home-button">
+    <a href="/">Back to Home</a>
+  </div>
 </body>
 </html>

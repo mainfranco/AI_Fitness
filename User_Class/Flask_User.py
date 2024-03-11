@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 import sqlite3
 from datetime import datetime
+import re
 
 
 
@@ -224,33 +225,54 @@ class User_Flask:
 
 
         
-def log_exercise(self, exercise_name):
+    def log_exercise(self, exercise_name):
 
-        date = datetime.now().strftime('%Y-%m-%d')
-        exercise = self.search_exercise(exercise_name)
-        
-        notes = 'Your notes here' 
-        user_id = self.id 
+            date = datetime.now().strftime('%Y-%m-%d')
+            exercise = self.search_exercise(exercise_name)
+            
+            notes = 'Your notes here' 
+            user_id = self.id 
 
-        # Insert the exercise into the exercises table
-        with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.cursor()
-            
-            # Insert the exercise record and get its ID
-            cursor.execute(f'''INSERT INTO exercises (date, exercise_name, notes, user_id) 
-                            VALUES (?, ?, ?, ?)''', (date, exercise, notes, user_id))
-            exercise_id = cursor.lastrowid  # Retrieve the ID of the newly inserted exercise
-            
-            # Prompt the user for set details and insert each set into the exercise_sets table
-            while True:
-                weight = input('Weight for the set (lbs): ')
-                reps = input('Reps: ')
+            # Insert the exercise into the exercises table
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
                 
-                cursor.execute(f'''INSERT INTO exercise_sets (exercise_id, weight, reps, user_id) 
-                                VALUES (?, ?, ?, ?)''', (exercise_id, weight, reps, self.id))
+                # Insert the exercise record and get its ID
+                cursor.execute(f'''INSERT INTO exercises (date, exercise_name, notes, user_id) 
+                                VALUES (?, ?, ?, ?)''', (date, exercise, notes, user_id))
+                exercise_id = cursor.lastrowid  # Retrieve the ID of the newly inserted exercise
                 
-                if input('Add another set? (y/n): ').lower() == 'n':
-                    break
-        
-        conn.commit()  # Commit outside the loop
-        print('Exercise logged successfully.')
+                # Prompt the user for set details and insert each set into the exercise_sets table
+                while True:
+                    weight = input('Weight for the set (lbs): ')
+                    reps = input('Reps: ')
+                    
+                    cursor.execute(f'''INSERT INTO exercise_sets (exercise_id, weight, reps, user_id) 
+                                    VALUES (?, ?, ?, ?)''', (exercise_id, weight, reps, self.id))
+                    
+                    if input('Add another set? (y/n): ').lower() == 'n':
+                        break
+            
+            conn.commit()  # Commit outside the loop
+            print('Exercise logged successfully.')
+
+
+    def format_food_img_data(self, response):
+        content = response['content']
+        pairs = content.split(', ')
+
+        response_dict = {pair.split(': ')[0]: pair.split(': ')[1].strip("'") for pair in pairs}
+
+        for key in response_dict.keys():
+            response_dict[key] = response_dict[key].replace(',', '').replace("'", '')
+            if key != 'food_name':
+                # Extract numeric values using regex
+                numbers = re.findall(r'\d+', response_dict[key])
+                if numbers:
+                    # Join the extracted numbers with a hyphen
+                    response_dict[key] = '-'.join(numbers)
+                else:
+                    response_dict[key] = ''
+
+        print(response_dict)
+        return response_dict

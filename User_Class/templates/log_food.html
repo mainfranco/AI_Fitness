@@ -1,35 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Food</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-        }
-        .search-container {
-            margin-top: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log Food</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    .search-container {
+      margin-top: 20px;
+    }
+    .home-button {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Log Food</h1>
-    </header>
-    <div class="search-container">
-        <form action="/log_food_entry" method="post">
-            <input type="text" name="food_search" placeholder="Enter the food you're searching for...">
-            <button type="submit">Search</button>
-        </form>
-    </div>
+  <header>
+    <h1>Log Food</h1>
+  </header>
+  <div class="search-container">
+    <form action="/log_food_entry" method="post">
+      <input type="text" name="food_search" placeholder="Enter the food you're searching for...">
+      <button type="submit">Search</button>
+    </form>
+  </div>
+  <div class="home-button">
+    <a href="/">Back to Home</a>
+  </div>
 </body>
 </html>
 

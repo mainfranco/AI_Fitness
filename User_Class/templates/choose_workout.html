@@ -5,12 +5,13 @@
     <title>Choose Your Workout</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f4f4f4;
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: url('https://images.pexels.com/photos/4164765/pexels-photo-4164765.jpeg?auto=compress&cs=tinysrgb&w=400') no-repeat center center fixed;
+        background-size: contain;
         }
         a.workout-button {
             display: inline-block; /* Align buttons horizontally */
@@ -45,6 +46,9 @@
         {% for workout in workouts %}
             <a href="/my_workouts/{{ workout.id }}" class="workout-button">{{ workout.name }}</a>
         {% endfor %}
+    </div>
+    <div>
+        <a href="/" style="color: white;">Back to Home</a>
     </div>
 </body>
 </html>
